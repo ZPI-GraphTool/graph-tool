@@ -10,3 +10,11 @@
 .popover .btn-close {
   filter: var(--bs-btn-close-white-filter);
 }
+
+/* #run_experiment {
+  --bs-btn-padding-x: 1em;
+} */
+
+#graph_options-label {
+  padding-bottom: 0.5em;
+}

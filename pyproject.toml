@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "faicons>=0.2.2",
+    "matplotlib>=3.9.2",
     "pandas>=2.2.3",
     "plotly>=5.24.1",
     "ridgeplot>=0.1.27",
