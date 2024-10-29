@@ -56,7 +56,8 @@ class BatchAlgorithm(ABC):
 
 class PreprocessEdge(ABC):
     """
-    Indicates the methods required for preprocessing the data
+    Meant for manually creating a Tuple/Dictionary/Sequence if the data has no standardized format like csv or mtx
+    Indicates the methods required for preprocessing the data. 
 
     ...
 
