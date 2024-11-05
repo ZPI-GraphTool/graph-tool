@@ -6,7 +6,7 @@ from .sidebar import sidebar
 app_ui = ui.page_sidebar(
     sidebar,
     ui.output_ui("compute"),
-    ui.output_plot("plot"),
+    # ui.output_plot("plot"),
     ui.include_css(STYLES_CSS_FILE),
     title="Network Stream Tool",
     fillable=True,

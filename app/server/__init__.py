@@ -49,11 +49,11 @@ def server(input, output, session):
     def _():
         save_results()
 
-    @render.plot
-    def plot():
-        some_dist = pd.Series([1, 2, 3, 4, 5])
+    # @render.plot
+    # def plot():
+    #     some_dist = pd.Series([1, 2, 3, 4, 5])
 
-        fig, ax = plt.subplots()
-        ax.hist(some_dist)
-        plt.savefig("plot.png")
-        return fig
+    #     fig, ax = plt.subplots()
+    #     ax.hist(some_dist)
+    #     plt.savefig("plot.png")
+    #     return fig

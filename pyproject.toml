@@ -12,4 +12,5 @@ dependencies = [
     "ridgeplot>=0.1.27",
     "shiny>=1.1.0",
     "shinywidgets>=0.3.3",
+    "kaleido==0.1.0.post1"
 ]

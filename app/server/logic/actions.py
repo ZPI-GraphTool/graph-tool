@@ -38,7 +38,7 @@ def edit_algorithm() -> None:
 def get_content(results: str) -> str:
     return textwrap.dedent(f"""\
         ## Results
-        {results}\
+        {results}
     """)
 
 
