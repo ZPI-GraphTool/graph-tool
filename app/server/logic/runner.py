@@ -68,7 +68,6 @@ class Runner:
             next(reader, None)
 
             for row in reader:
-                print(row)
                 self._number_of_processed_edges += 1
 
                 if self._should_preprocess:

@@ -69,10 +69,10 @@ def server(input, output, session):
                     },
                     "Batch": get_algorithm_names("batch"),
                     "Streaming": get_algorithm_names("streaming"),
-                    # "Presupplied": {
-                    #     "2": "Degree centrality batch",
-                    #     "3": "Degree centrality stream",
-                    # },
+                    "Presupplied": {
+                        "2": "Degree centrality batch",
+                        "3": "Degree centrality stream",
+                    },
                 },
                 selected="2",
             ),
@@ -102,9 +102,9 @@ def server(input, output, session):
     def _() -> Path:
         algorithm_path: Path
         match input.select_algorithm():
-            case "0":
+            case "2":
                 algorithm_path = DEGREE_CENTRALITY_BATCH_ALGORITHM_FILE
-            case "1":
+            case "3":
                 algorithm_path = DEGREE_CENTRALITY_STREAM_ALGORITHM_FILE
         return algorithm_path
 
@@ -119,8 +119,8 @@ def server(input, output, session):
             streaming_path=DEGREE_CENTRALITY_STREAM_ALGORITHM_FILE,
             batch_path=DEGREE_CENTRALITY_BATCH_ALGORITHM_FILE,
         )
-        results = runner.run()
-        print(results)
+        stream, batch, _, _ = runner.run()
+        print(batch)
 
     @reactive.effect
     @reactive.event(input.save_results)
