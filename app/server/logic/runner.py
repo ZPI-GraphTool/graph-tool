@@ -5,7 +5,7 @@ import os
 import sys
 import time
 from pathlib import Path
-import psutil
+from pympler.asizeof import asizeof
 
 import pandas as pd
 
@@ -52,8 +52,9 @@ class Runner:
         self._preprocessing_time_per_edge = []
                 
         # Saves the amount of stored memory in RAM (non-swapped) in MB by this runner process 
-        # - will include everything including the sizes of the history and of the stream, batch object
-        # stop recording when the streaming algorithm is done computing 
+        # psutil implementation - will include everything including the sizes of the history and of the stream, batch object
+        # stops recording when the streaming algorithm is done computing 
+        # pympler implementation - is restricted to the object itself, is an approximation of its size
         self._memory_history = []
         self._number_of_processed_edges = 0
 
@@ -92,7 +93,7 @@ class Runner:
 
 
     def run(self):
-        process = psutil.Process(os.getpid())
+        # process = psutil.Process(os.getpid())
         columns = [
             "",
             "company",
@@ -108,7 +109,8 @@ class Runner:
         ]
 
         MB_ratio = 1/(1024*1024) 
-        self._memory_history = [process.memory_info().rss*MB_ratio]
+        # self._memory_history.append([process.memory_info().rss*MB_ratio])
+        self._memory_history.append(asizeof(self._stream))
         
         with open(self._dataset, encoding="utf-8") as file:
             reader = csv.DictReader(
@@ -138,7 +140,8 @@ class Runner:
                     property_calculation_duration 
                 )
 
-                self._memory_history.append(process.memory_info().rss*MB_ratio)
+                # self._memory_history.append(process.memory_info().rss*MB_ratio)
+                self._memory_history.append(asizeof(self._stream))
 
 
             if self._with_batch:
