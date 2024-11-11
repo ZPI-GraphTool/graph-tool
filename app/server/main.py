@@ -140,7 +140,19 @@ def server(input, output, session):
             streaming_path=DEGREE_CENTRALITY_STREAM_ALGORITHM_FILE,
             batch_path=DEGREE_CENTRALITY_BATCH_ALGORITHM_FILE,
         )
-        print(runner.run())
+        runner.run()
+
+        print("=====Accuracy")
+        print(runner.get_streaming_accuracy())
+        print("=====Stream results")
+        print(runner.get_stream_results())
+        print("=====Batch results")
+        print(runner.get_batch_results())
+        print("=====Memory")
+        print(runner.memory_history)
+        print("===== Edge calculations time history")
+        print(runner.calculation_time_per_edge)
+
 
     @reactive.effect
     @reactive.event(input.save_results)

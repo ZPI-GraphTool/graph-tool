@@ -23,4 +23,4 @@ class DegreeCentralityBatch(BatchAlgorithm):
             self.results.items(), key=lambda item: item[1], reverse=True
         )
 
-        return degree_centralities[:11]
+        return degree_centralities
