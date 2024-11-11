@@ -6,7 +6,7 @@ class DegreeCentralityAccurateVersion(StreamingAlgorithm):
         self.degrees = {}
         self.results = {}
 
-    def on_edge_calculate(self, edge):
+    def on_edge_calculate(self, edge: dict):
         vertex_start = edge["start"]
         vertex_end = edge["end"]
 

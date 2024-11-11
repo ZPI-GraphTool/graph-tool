@@ -18,30 +18,32 @@ def get_class_instance_from(file_path: Path) -> object:
     spec.loader.exec_module(module)  # type: ignore
 
     for name_local in dir(module):
-        if inspect.isclass(getattr(module, name_local)):
-            MysteriousClass = getattr(module, name_local)
-
-            # checks if the mystery class is not abstract
-            if not inspect.isabstract(MysteriousClass):
-                return MysteriousClass()
+        if not inspect.isclass(getattr(module, name_local)):
+            continue
+        MysteriousClass = getattr(module, name_local)
+        if not inspect.isabstract(MysteriousClass):
+            return MysteriousClass()
 
 
 class Runner:
     def __init__(
         self,
-        dataset_path: Path = Path(""),
+        dataset_path: Path,
+        streaming_path: Path,
         preprocess_path: Path = Path(""),
-        streaming_path: Path = Path(""),
         batch_path: Path = Path(""),
     ):
-        self._should_preprocess = not preprocess_path
         self._dataset = dataset_path
+        self._should_preprocess = not preprocess_path
+        self._with_batch = not batch_path
 
         if self._should_preprocess:
             self._preprocess = get_class_instance_from(preprocess_path)
 
-        self._batch = get_class_instance_from(batch_path)
         self._stream = get_class_instance_from(streaming_path)
+
+        if self._with_batch:
+            self._batch = get_class_instance_from(batch_path)
 
         self._avg_property_time_per_edge = []
         self._avg_preprocessing_time_per_edge = []
@@ -87,17 +89,18 @@ class Runner:
                     property_calculation_duration / self._number_of_processed_edges
                 )
 
-            if os.path.basename(self._dataset).endswith(".csv"):
-                self._batch.calculate_property(pd.read_csv(self._dataset))  # type: ignore
+            if self._with_batch:
+                if os.path.basename(self._dataset).endswith(".csv"):
+                    self._batch.calculate_property(pd.read_csv(self._dataset))  # type: ignore
 
-            elif os.path.basename(self._dataset).endswith(".mtx"):
-                # TODO: convert mtx to dataframe
-                pass
+                elif os.path.basename(self._dataset).endswith(".mtx"):
+                    # TODO: convert mtx to dataframe
+                    pass
 
-            else:
-                # TODO: how to make it possible to batch process when the best we got is some text file
-                # batch processing atm requires a pandas DataFrame
-                pass
+                else:
+                    # TODO: how to make it possible to batch process when the best we got is some text file
+                    # batch processing atm requires a pandas DataFrame
+                    pass
 
         return (
             self._stream.submit_results(),  # type: ignore

@@ -1,9 +1,0 @@
-from server.logic.interfaces.preprocess_edge import PreprocessEdge
-
-
-class NewPreprocessingFunction(PreprocessEdge):
-    def __init__(self) -> None: ...
-
-    def create_edge_from(self, line): ...
-
-    def set_number_of_headers_to_ignore(self, lines_to_ignore): ...

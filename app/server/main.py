@@ -26,7 +26,6 @@ def get_class_name_from(file_path: Path) -> str | None:
     for name_local in dir(module):
         if inspect.isclass(getattr(module, name_local)):
             return name_local
-    return None
 
 
 def get_algorithm_names(directory: str) -> dict[str, str]:
@@ -56,37 +55,59 @@ def server(input, output, session):
         )
 
     @render.ui
-    @reactive.event(input.refresh_algorithm_list, ignore_none=False)
-    def render_algorithm_selectize():
+    @reactive.event(input.refresh_streaming_algorithm_list, ignore_none=False)
+    def render_streaming_algorithm_selectize():
         return (
             ui.input_selectize(
-                "select_algorithm",
+                "select_streaming_algorithm",
                 "",
                 {
-                    "Provided by me": {
-                        "0": "New batch algorithm",
-                        "1": "New streaming algorithm",
-                    },
-                    "Batch": get_algorithm_names("batch"),
-                    "Streaming": get_algorithm_names("streaming"),
+                    "": {"0": "New algorithm"},
+                    "Existing": get_algorithm_names("streaming"),
                     "Presupplied": {
-                        "2": "Degree centrality batch",
-                        "3": "Degree centrality stream",
+                        str(
+                            DEGREE_CENTRALITY_STREAM_ALGORITHM_FILE
+                        ): "Degree centrality stream",
                     },
                 },
-                selected="2",
+                selected=str(DEGREE_CENTRALITY_STREAM_ALGORITHM_FILE),
             ),
         )
 
-    @reactive.effect
-    @reactive.event(input.edit_preprocessing)
-    def _():
-        edit_algorithm(AlgorithmType.PREPROCESS)
+    @render.ui
+    @reactive.event(input.refresh_batch_algorithm_list, ignore_none=False)
+    def render_batch_algorithm_selectize():
+        return (
+            ui.input_selectize(
+                "select_batch_algorithm",
+                "",
+                {
+                    "": {"0": "New algorithm"},
+                    "Existing": get_algorithm_names("batch"),
+                    "Presupplied": {
+                        str(
+                            DEGREE_CENTRALITY_BATCH_ALGORITHM_FILE
+                        ): "Degree centrality batch",
+                    },
+                },
+                selected=str(DEGREE_CENTRALITY_BATCH_ALGORITHM_FILE),
+            ),
+        )
+
+    # @reactive.effect
+    # @reactive.event(input.edit_preprocessing)
+    # def _():
+    #     edit_algorithm(AlgorithmType.PREPROCESS)
 
     @reactive.effect
-    @reactive.event(input.edit_algorithm)
+    @reactive.event(input.edit_streaming_algorithm)
     def _():
-        edit_algorithm(input.select_algorithm())
+        edit_algorithm(AlgorithmType.STREAMING, input.select_streaming_algorithm())
+
+    @reactive.effect
+    @reactive.event(input.edit_batch_algorithm)
+    def _():
+        edit_algorithm(AlgorithmType.BATCH, input.select_batch_algorithm())
 
     @reactive.calc
     def parse_file() -> Path:
@@ -119,8 +140,7 @@ def server(input, output, session):
             streaming_path=DEGREE_CENTRALITY_STREAM_ALGORITHM_FILE,
             batch_path=DEGREE_CENTRALITY_BATCH_ALGORITHM_FILE,
         )
-        stream, batch, _, _ = runner.run()
-        print(batch)
+        print(runner.run())
 
     @reactive.effect
     @reactive.event(input.save_results)

@@ -33,16 +33,16 @@ sidebar = ui.sidebar(
         ),
         ui.output_ui("render_preprocess_selectize"),
         ui.panel_conditional(
-            "input.select_preprocess== 0",
+            "input.select_preprocess == 0",
             ui.input_action_button("edit_preprocessing", "Edit preprocessing function"),
         ),
     ),
     ui.row(
-        ui.column(4, "Algorithms", class_="selectize-label"),
+        ui.column(10, "Streaming algorithm", class_="selectize-label"),
         ui.column(
-            3,
+            2,
             ui.input_action_button(
-                "refresh_algorithm_list",
+                "refresh_streaming_algorithm_list",
                 label="",
                 icon=fa.icon_svg("rotate"),
                 class_="refresh-button",
@@ -50,10 +50,26 @@ sidebar = ui.sidebar(
         ),
         class_="selectize-row",
     ),
-    ui.output_ui("render_algorithm_selectize"),
+    ui.output_ui("render_streaming_algorithm_selectize"),
+    ui.input_action_button("edit_streaming_algorithm", "Edit streaming algorithm"),
+    ui.input_switch("with_batch_algorithm", "With batch algorithm", False),
     ui.panel_conditional(
-        "input.select_algorithm < 2",
-        ui.input_action_button("edit_algorithm", "Edit algorithm"),
+        "input.with_batch_algorithm == true",
+        ui.row(
+            ui.column(10, "Batch algorithm", class_="selectize-label"),
+            ui.column(
+                2,
+                ui.input_action_button(
+                    "refresh_batch_algorithm_list",
+                    label="",
+                    icon=fa.icon_svg("rotate"),
+                    class_="refresh-button",
+                ),
+            ),
+            class_="selectize-row",
+        ),
+        ui.output_ui("render_batch_algorithm_selectize"),
+        ui.input_action_button("edit_batch_algorithm", "Edit batch algorithm"),
     ),
     ui.input_action_button("run_experiment", "Run experiment"),
     width=320,
