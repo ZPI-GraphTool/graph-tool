@@ -30,22 +30,24 @@ class Runner:
     def __init__(
         self,
         dataset_path: Path,
+        preprocess_path: Path | None,
         streaming_path: Path,
-        preprocess_path: Path = Path(""),
-        batch_path: Path = Path(""),
+        batch_path: Path | None,
     ):
         self._dataset = dataset_path
+        self._should_preprocess = preprocess_path is not None
+        self._with_batch = batch_path is not None
         self._should_preprocess = not preprocess_path
         self._with_batch = not batch_path.name is None
         print(self._with_batch)
 
         if self._should_preprocess:
-            self._preprocess = get_class_instance_from(preprocess_path)
+            self._preprocess = get_class_instance_from(preprocess_path)  # type: ignore
 
-        self._stream = get_class_instance_from(streaming_path)
+        self._streaming = get_class_instance_from(streaming_path)
 
         if self._with_batch:
-            self._batch = get_class_instance_from(batch_path)
+            self._batch = get_class_instance_from(batch_path)  # type: ignore
         print(self._batch)
         # time inverals are now saved using the perf_counter_ns for greater precision 
         self._calculation_time_per_edge = []
@@ -122,6 +124,9 @@ class Runner:
                 self._number_of_processed_edges += 1
 
                 if self._should_preprocess:
+                    preprocess_start = time.perf_counter()
+                    # processssss
+                    preprocess_end = time.perf_counter()
                     preprocess_start = time.perf_counter_ns()
                     row = self._preprocess.create_edge_from(row)
                     preprocess_end = time.perf_counter_ns()
@@ -130,6 +135,9 @@ class Runner:
                         preprocess_duration
                     )
 
+                property_start = time.perf_counter()
+                self._streaming.on_edge_calculate(row)  # type: ignore
+                property_end = time.perf_counter()
                 property_start = time.perf_counter_ns()
                 self._stream.on_edge_calculate(row)  # type: ignore
                 property_end = time.perf_counter_ns()
@@ -157,3 +165,12 @@ class Runner:
                     # batch processing atm requires a pandas DataFrame
                     pass
 
+        streaming_results = self._streaming.submit_results()  # type: ignore
+        batch_results = self._batch.submit_results() if self._with_batch else None  # type: ignore
+
+        return (
+            streaming_results,
+            batch_results,
+            self._avg_property_time_per_edge,
+            self._avg_preprocessing_time_per_edge,
+        )

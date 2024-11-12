@@ -1,4 +1,4 @@
-from server.logic.interfaces.preprocess_edge import PreprocessEdge
+from server.logic.interfaces import PreprocessEdge
 
 
 # Change this class name to something unique and descriptive
