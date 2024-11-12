@@ -1,4 +1,4 @@
-from server.logic.interfaces.batch_algorithm import BatchAlgorithm
+from server.logic.interfaces import BatchAlgorithm
 
 
 # Change this class name to something unique and descriptive
