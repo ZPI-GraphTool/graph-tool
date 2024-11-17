@@ -7,6 +7,7 @@ import time
 from pathlib import Path
 from pympler.asizeof import asizeof
 from .interfaces import StreamingAlgorithm, BatchAlgorithm, PreprocessEdge
+from .file_reading import CSVFile, MTXFile, FileProcessingStrategy, TEXTFile
 import pandas as pd
 
 
@@ -39,6 +40,19 @@ class Runner:
         self._should_preprocess = preprocess_path is not None
         self._with_batch = batch_path is not None
         
+        file_extension = self._dataset.suffix
+
+        if file_extension =='.csv':
+            self._file_reading: FileProcessingStrategy = CSVFile(self._dataset)
+        elif file_extension == '.mtx':
+            self._file_reading: FileProcessingStrategy = MTXFile(self._dataset)
+        else:
+            # dont ask 
+            if self._should_preprocess:
+                self._file_reading :FileProcessingStrategy = TEXTFile(self._dataset, self._preprocess.create_edge_from) # type:ignore
+            else:
+                self._file_reading :FileProcessingStrategy = TEXTFile(self._dataset)
+        
         # time inverals are now saved using the perf_counter_ns for greater precision 
         self._calculation_time_per_edge = []
         self._preprocessing_time_per_edge = []
@@ -57,13 +71,7 @@ class Runner:
             
         if self._with_batch:
             self._batch = get_class_instance_from(batch_path)  # type: ignore
-               
-                
 
-        
-        
-
-        
 
     # getters for metrics and results - 
     # some of them are optional (like results from batch) => changed method tuple return to getters
@@ -102,6 +110,16 @@ class Runner:
         return self._batch.submit_results() # type: ignore
    
 
+    def get_jaccard_similarity(self):
+        set_a = set(self.get_stream_results())
+        set_b = set(self.get_batch_results())
+
+        intersec = set_a.intersection(set_b)
+        union = set_a.union(set_b)
+        return float(len(intersec))/float(len(union))
+    
+    
+
     def get_streaming_accuracy(self):
         streaming_results = self._streaming.submit_results() # type: ignore
         batch_results = self._batch.submit_results() # type: ignore
@@ -123,32 +141,21 @@ class Runner:
 
     def run(self):
         # process = psutil.Process(os.getpid())
-        columns = [
-            "",
-            "company",
-            "line",
-            "departure_time",
-            "arrival_time",
-            "start",
-            "end",
-            "start_lat",
-            "start_lon",
-            "end_lat",
-            "end_lon",
-        ]
+        
 
-        MB_ratio = 1/(1024*1024) 
+        # MB_ratio = 1/(1024*1024) 
         # self._memory_history.append([process.memory_info().rss*MB_ratio])
         self._memory_history.append(asizeof(self._streaming))
         
         with open(self._dataset, encoding="utf-8") as file:
-            reader = csv.DictReader(
-                file, fieldnames=columns
-            )  
-            next(reader, None)
+            reader = self._file_reading.get_reader(file) # type: ignore
+            self._file_reading.set_headers(reader)
 
-            for row in reader:
+
+            for row in reader: # type: ignore
                 self._number_of_processed_edges += 1
+
+                row = self._file_reading.process_row(row)
 
                 if self._should_preprocess:
                     preprocess_start = time.perf_counter()
@@ -180,17 +187,8 @@ class Runner:
 
 
             if self._with_batch:
-                if os.path.basename(self._dataset).endswith(".csv"):
-                    self._batch.calculate_property(pd.read_csv(self._dataset))  # type: ignore
-
-                elif os.path.basename(self._dataset).endswith(".mtx"):
-                    # TODO: convert mtx to dataframe
-                    pass
-
-                else:
-                    # TODO: how to make it possible to batch process when the best we got is some text file
-                    # batch processing atm requires a pandas DataFrame
-                    pass
+                self._batch.calculate_property(self._file_reading.get_dataframe()) # type: ignore
+                
 
         streaming_results = self._streaming.submit_results()  # type: ignore
         batch_results = self._batch.submit_results() if self._with_batch else None  # type: ignore

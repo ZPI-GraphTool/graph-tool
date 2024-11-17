@@ -1,6 +1,5 @@
 from pathlib import Path
 import traceback 
-import sys
 
 import pandas as pd
 import plotly.express as px
@@ -70,8 +69,10 @@ def server(input, output, session):
             )
             runner.validate_implementation()
             results.set(runner.run())
-        except Exception as ex: 
-            errors.set(ex)
+        except TypeError as te_error: 
+            errors.set(te_error)
+        except Exception as ex:
+            errors.set(traceback.format_exc())
 
     @reactive.calc
     def streaming_node_rank():
