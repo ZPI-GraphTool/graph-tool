@@ -6,7 +6,7 @@ import sys
 import time
 from pathlib import Path
 from pympler.asizeof import asizeof
-
+from .interfaces import StreamingAlgorithm, BatchAlgorithm, PreprocessEdge
 import pandas as pd
 
 
@@ -26,6 +26,7 @@ def get_class_instance_from(file_path: Path) -> object:
             return MysteriousClass()
 
 
+
 class Runner:
     def __init__(
         self,
@@ -37,18 +38,7 @@ class Runner:
         self._dataset = dataset_path
         self._should_preprocess = preprocess_path is not None
         self._with_batch = batch_path is not None
-        self._should_preprocess = not preprocess_path
-        self._with_batch = not batch_path.name is None
-        print(self._with_batch)
-
-        if self._should_preprocess:
-            self._preprocess = get_class_instance_from(preprocess_path)  # type: ignore
-
-        self._streaming = get_class_instance_from(streaming_path)
-
-        if self._with_batch:
-            self._batch = get_class_instance_from(batch_path)  # type: ignore
-        print(self._batch)
+        
         # time inverals are now saved using the perf_counter_ns for greater precision 
         self._calculation_time_per_edge = []
         self._preprocessing_time_per_edge = []
@@ -59,7 +49,21 @@ class Runner:
         # pympler implementation - is restricted to the object itself, is an approximation of its size
         self._memory_history = []
         self._number_of_processed_edges = 0
+            
+        self._streaming = get_class_instance_from(streaming_path)
+        
+        if self._should_preprocess:
+            self._preprocess = get_class_instance_from(preprocess_path)  # type: ignore
+            
+        if self._with_batch:
+            self._batch = get_class_instance_from(batch_path)  # type: ignore
+               
+                
 
+        
+        
+
+        
 
     # getters for metrics and results - 
     # some of them are optional (like results from batch) => changed method tuple return to getters
@@ -75,17 +79,32 @@ class Runner:
     def memory_history(self):
         return self._memory_history
     
+
+    def validate_algorithm_signatures(self, row_data) -> tuple[bool, str]:
+        stream_sig = inspect.signature(self._streaming.on_edge_calculate).parameters["edge"].annotation # type: ignore
+        are_params_correct = type(row_data) == stream_sig
+        message = ''
+        if not are_params_correct:
+            message += f"The given row data type: {type(row_data)} does not match the edge parameter {stream_sig} in the provided streaming algorithm.\n"
+
+        if self._should_preprocess:
+            preprocess_sig = inspect.signature(self._preprocess.create_edge_from).parameters['line'].annotation # type: ignore
+            are_params_correct = are_params_correct or type(row_data)==preprocess_sig
+            message += f"The given row data type: {type(row_data)} does not match the line parameter {preprocess_sig} in the provided preprocessing.\n"
+        
+        return are_params_correct, message
+        
     
     def get_stream_results(self):
-        return self._stream.submit_results() # type: ignore
+        return self._streaming.submit_results() # type: ignore
     
     def get_batch_results(self):
         return self._batch.submit_results() # type: ignore
-    
+   
 
     def get_streaming_accuracy(self):
-        streaming_results = self._stream.submit_results()
-        batch_results = self._batch.submit_results()
+        streaming_results = self._streaming.submit_results() # type: ignore
+        batch_results = self._batch.submit_results() # type: ignore
         correct = 0
         for stream, batch in zip(streaming_results, batch_results):
             if stream[0] == batch[0]:
@@ -93,6 +112,14 @@ class Runner:
 
         return correct/len(streaming_results)
 
+
+    def validate_implementation(self):
+        if not isinstance(self._streaming, StreamingAlgorithm): # type: ignore
+            raise TypeError("Streaming algorithm is not implemeted right - cannot instantiate StreamingAlgorithm interface. Check if all methods have been supplied together with the right method name.")
+        elif self._with_batch and ( not isinstance(self._batch, BatchAlgorithm)): # type:ignore
+            raise TypeError("Batch algorithm is not implemeted right - cannot instantiate BatchAlgorithm interface. Check if all methods have been supplied together with the right method name.")
+        elif self._should_preprocess and (not isinstance(self._preprocess, PreprocessEdge)): # type:ignore
+            raise TypeError("Preprocessing algorithm is not implemeted right - cannot instantiate PreprocessEdge interface. Check if all methods have been supplied together with the right method name.")
 
     def run(self):
         # process = psutil.Process(os.getpid())
@@ -112,7 +139,7 @@ class Runner:
 
         MB_ratio = 1/(1024*1024) 
         # self._memory_history.append([process.memory_info().rss*MB_ratio])
-        self._memory_history.append(asizeof(self._stream))
+        self._memory_history.append(asizeof(self._streaming))
         
         with open(self._dataset, encoding="utf-8") as file:
             reader = csv.DictReader(
@@ -125,10 +152,10 @@ class Runner:
 
                 if self._should_preprocess:
                     preprocess_start = time.perf_counter()
-                    # processssss
+                   
                     preprocess_end = time.perf_counter()
                     preprocess_start = time.perf_counter_ns()
-                    row = self._preprocess.create_edge_from(row)
+                    row = self._preprocess.create_edge_from(row) # type: ignore
                     preprocess_end = time.perf_counter_ns()
                     preprocess_duration = preprocess_end - preprocess_start
                     self._preprocessing_time_per_edge.append(
@@ -139,7 +166,7 @@ class Runner:
                 self._streaming.on_edge_calculate(row)  # type: ignore
                 property_end = time.perf_counter()
                 property_start = time.perf_counter_ns()
-                self._stream.on_edge_calculate(row)  # type: ignore
+                self._streaming.on_edge_calculate(row)  # type: ignore
                 property_end = time.perf_counter_ns()
 
 
@@ -149,7 +176,7 @@ class Runner:
                 )
 
                 # self._memory_history.append(process.memory_info().rss*MB_ratio)
-                self._memory_history.append(asizeof(self._stream))
+                self._memory_history.append(asizeof(self._streaming))
 
 
             if self._with_batch:
@@ -171,6 +198,6 @@ class Runner:
         return (
             streaming_results,
             batch_results,
-            self._avg_property_time_per_edge,
-            self._avg_preprocessing_time_per_edge,
+            self._calculation_time_per_edge,
+            self._preprocessing_time_per_edge,
         )
