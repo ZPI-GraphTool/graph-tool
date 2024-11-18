@@ -1,9 +1,10 @@
 from pathlib import Path
+import traceback 
 
 import pandas as pd
 import plotly.express as px
 from demos import CONNECTIONS_CSV_FILE
-from shiny import reactive, render
+from shiny import reactive, render, ui
 from shinywidgets import render_widget
 
 from .logic import Runner
@@ -17,10 +18,13 @@ from .reactives import (
 results = reactive.value()
 
 
+
 def server(input, output, session):
     server_batch_selectize(input)
     server_preprocessing_selectize(input)
     server_streaming_selectize(input)
+    
+    errors = reactive.value()
 
     @reactive.effect
     @reactive.event(input.edit_preprocessing)
@@ -56,13 +60,19 @@ def server(input, output, session):
         streaming_path = input.select_streaming()
         batch_path = input.select_batch() if input.with_batch() else None
 
-        runner = Runner(
-            dataset_path=dataset_path,
-            preprocess_path=preprocess_path,
-            streaming_path=streaming_path,
-            batch_path=batch_path,
-        )
-        results.set(runner.run())
+        try: 
+            runner = Runner(
+                dataset_path=dataset_path,
+                preprocess_path=preprocess_path,
+                streaming_path=streaming_path,
+                batch_path=batch_path,
+            )
+            runner.validate_implementation()
+            results.set(runner.run())
+        except TypeError as te_error: 
+            errors.set(te_error)
+        except Exception as ex:
+            errors.set(traceback.format_exc())
 
     @reactive.calc
     def streaming_node_rank():
@@ -99,3 +109,15 @@ def server(input, output, session):
         plots = [avg_property_time_plot]
         experiment_name = input.experiment_name()
         save_results(experiment_name, results, plots)
+
+
+    @reactive.effect
+    @reactive.event(errors)
+    def modal_error_display():
+        
+        m = ui.modal(
+            str(errors.get()),
+            title = "Error",
+            easy_close=True
+        )
+        ui.modal_show(m)

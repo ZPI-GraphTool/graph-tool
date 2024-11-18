@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Sequence
 
 numeric = int | float
 
@@ -19,13 +19,13 @@ class StreamingAlgorithm(ABC):
     """
 
     @abstractmethod
-    def on_edge_calculate(self, edge: tuple[Any, ...]) -> None:
+    def on_edge_calculate(self, edge: Sequence | dict) -> None:
         """
         Performs a set of instructions on one given edge.
 
         Parameters
         ----------
-        edge: tuple
+        edge: sequence or dictionary
             Edge in the form of a tuple
 
         """

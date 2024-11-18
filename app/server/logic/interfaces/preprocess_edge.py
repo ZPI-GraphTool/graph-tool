@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Union, Sequence
 
 
 class PreprocessEdge(ABC):
@@ -12,13 +12,13 @@ class PreprocessEdge(ABC):
     Methods
     -------
     create_edge_from(line)
-        crates a tuple from one line in the given dataset
+        crates or modifies a python object (e.g. dictionary) from one line in the given dataset
     set_number_of_headers_to_ignore(lines_to_ignore)
         returns the result of the streaming algorithm once the whole dataset has been processed
     """
 
     @abstractmethod
-    def create_edge_from(self, line: Any) -> tuple[Any, ...]:
+    def create_edge_from(self, line: Any) -> Sequence | dict:
         """
         Creates a tuple from one line row from the parsed dataset.
 
