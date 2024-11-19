@@ -7,12 +7,12 @@ def preprocessing() -> tuple:
         ui.panel_conditional(
             "input.with_preprocessing == true",
             ui.row(
-                ui.column(8, "Preprocessing function", class_="selectize-label"),
+                ui.column(10, "Preprocessing function", class_="selectize-label"),
                 ui.column(
-                    3,
+                    2,
                     ui.input_action_button(
                         "refresh_preprocessing_list",
-                        label="",
+                        label=None,
                         icon=fa.icon_svg("rotate"),
                         class_="refresh-button",
                     ),

@@ -1,4 +1,4 @@
-:root {
+/* :root {
   --bslib-sidebar-main-bg: #f8f8f8;
 }
 
@@ -9,6 +9,21 @@
 
 .popover .btn-close {
   filter: var(--bs-btn-close-white-filter);
+} */
+
+thead {
+  --shiny-datagrid-grid-header-bgcolor: var(--bs-body-bg) !important;
+}
+
+.sidebar-content {
+  position: relative;
+  top: -2.225rem;
+}
+
+bslib-input-dark-mode {
+  position: fixed;
+  left: 15rem;
+  top: 4.15rem;
 }
 
 .refresh-button {

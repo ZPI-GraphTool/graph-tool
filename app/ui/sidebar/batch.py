@@ -6,14 +6,14 @@ def batch() -> tuple:
     return (
         ui.input_switch("with_batch", "With batch algorithm", False),
         ui.panel_conditional(
-            "input.with_batch== true",
+            "input.with_batch == true",
             ui.row(
                 ui.column(10, "Batch algorithm", class_="selectize-label"),
                 ui.column(
                     2,
                     ui.input_action_button(
                         "refresh_batch_list",
-                        label="",
+                        label=None,
                         icon=fa.icon_svg("rotate"),
                         class_="refresh-button",
                     ),

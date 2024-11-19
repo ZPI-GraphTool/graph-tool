@@ -10,7 +10,7 @@ def streaming() -> tuple:
                 2,
                 ui.input_action_button(
                     "refresh_streaming_list",
-                    label="",
+                    label=None,
                     icon=fa.icon_svg("rotate"),
                     class_="refresh-button",
                 ),
