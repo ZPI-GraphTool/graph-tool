@@ -437,6 +437,7 @@ dependencies = [
     { name = "networkx" },
     { name = "pandas" },
     { name = "plotly" },
+    { name = "pympler" },
     { name = "ridgeplot" },
     { name = "shiny" },
     { name = "shinywidgets" },
@@ -451,6 +452,7 @@ requires-dist = [
     { name = "networkx", specifier = ">=3.4.2" },
     { name = "pandas", specifier = ">=2.2.3" },
     { name = "plotly", specifier = ">=5.24.1" },
+    { name = "pympler", specifier = ">=1.1" },
     { name = "ridgeplot", specifier = ">=0.1.27" },
     { name = "shiny", specifier = ">=1.1.0" },
     { name = "shinywidgets", specifier = ">=0.3.3" },
@@ -676,6 +678,18 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/8e/62/8336eff65bcbc8e4cb5d05b55faf041285951b6e80f33e2bff2024788f31/pygments-2.18.0.tar.gz", hash = "sha256:786ff802f32e91311bff3889f6e9a86e81505fe99f2735bb6d60ae0c5004f199", size = 4891905 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/f7/3f/01c8b82017c199075f8f788d0d906b9ffbbc5a47dc9918a945e13d5a2bda/pygments-2.18.0-py3-none-any.whl", hash = "sha256:b8e6aca0523f3ab76fee51799c488e38782ac06eafcf95e7ba832985c8e7b13a", size = 1205513 },
+]
+
+[[package]]
+name = "pympler"
+version = "1.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pywin32", marker = "platform_system == 'Windows'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/dd/37/c384631908029676d8e7213dd956bb686af303a80db7afbc9be36bc49495/pympler-1.1.tar.gz", hash = "sha256:1eaa867cb8992c218430f1708fdaccda53df064144d1c5656b1e6f1ee6000424", size = 179954 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/79/4f/a6a2e2b202d7fd97eadfe90979845b8706676b41cbd3b42ba75adf329d1f/Pympler-1.1-py3-none-any.whl", hash = "sha256:5b223d6027d0619584116a0cbc28e8d2e378f7a79c1e5e024f9ff3b673c58506", size = 165766 },
 ]
 
 [[package]]

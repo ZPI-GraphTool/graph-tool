@@ -19,7 +19,12 @@ class StreamingAlgorithm(ABC):
     """
 
     @abstractmethod
-    def on_edge_calculate(self, edge: Sequence | dict) -> None:
+    def on_edge_calculate(
+        self,
+        edge: Sequence | dict,
+        edge_start_name: str | None = "start",
+        edge_end_name: str | None = "end",
+    ) -> None:
         """
         Performs a set of instructions on one given edge.
 

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Union, Sequence
+from typing import Any, Sequence
 
 
 class PreprocessEdge(ABC):
