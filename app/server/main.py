@@ -1,4 +1,6 @@
-from shiny import reactive, ui
+import os
+
+from shiny import Inputs, Outputs, Session, reactive, ui
 
 from .reactives import (
     server_edit,
@@ -24,7 +26,11 @@ results = {
 }
 
 
-def server(input, output, session):
+async def close_app():
+    os.kill(os.getpid(), 9)
+
+
+def server(input: Inputs, output: Outputs, session: Session):
     server_selectize(input)
     server_edit(input)
     server_run_experiment(input, results, errors)
@@ -35,3 +41,10 @@ def server(input, output, session):
     def modal_error_display():
         m = ui.modal(str(errors.get()), title="Error", easy_close=True)
         ui.modal_show(m)
+
+    @reactive.effect
+    @reactive.event(input.close_app)
+    async def close_session():
+        await session.close()
+
+    session.on_ended(close_app)

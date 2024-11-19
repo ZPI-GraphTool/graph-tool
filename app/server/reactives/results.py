@@ -1,7 +1,7 @@
 import pandas as pd
 import plotly.express as px
 from plotly.graph_objs import Figure, Layout
-from shiny import reactive, render, ui
+from shiny import Inputs, reactive, render, ui
 from shinywidgets import render_widget
 
 from ..logic.actions import save_results
@@ -9,7 +9,7 @@ from ..logic.actions import save_results
 test_template = dict(layout=Layout())
 
 
-def server_results(input, results: dict[str, reactive.value]):
+def server_results(input: Inputs, results: dict[str, reactive.value]):
     @reactive.calc
     def plotly_template() -> str:
         return "plotly_dark" if input.mode() == "dark" else "plotly"
@@ -49,32 +49,6 @@ def server_results(input, results: dict[str, reactive.value]):
         )
 
     @reactive.calc
-    def get_preprocessing_time_plot() -> Figure:
-        df = pd.DataFrame(results["preprocessing_time"].get(), columns=["time [ns]"])
-        line_plot = px.line(
-            df,
-            y=df.columns.values[0],
-            labels={"index": "edge"},
-            template=plotly_template(),
-        )
-        return line_plot
-
-    @render.ui
-    @reactive.event(input.run_experiment)
-    def preprocessing_time_plot():
-        return (
-            (
-                ui.card(
-                    ui.card_header("Preprocessing time"),
-                    render_widget(get_preprocessing_time_plot),  # type: ignore
-                    full_screen=True,
-                ),
-            )
-            if input.with_preprocessing()
-            else None
-        )
-
-    @reactive.calc
     def get_calculation_time_plot() -> Figure:
         df = pd.DataFrame(results["calculation_time"].get(), columns=["time [ns]"])
         line_plot = px.line(
@@ -98,7 +72,7 @@ def server_results(input, results: dict[str, reactive.value]):
 
     @reactive.calc
     def get_memory_history_plot() -> Figure:
-        df = pd.DataFrame(results["memory"].get(), columns=["memory [MB]"])
+        df = pd.DataFrame(results["memory"].get(), columns=["memory [B]"])
         line_plot = px.line(
             df,
             y=df.columns.values[0],
@@ -122,15 +96,12 @@ def server_results(input, results: dict[str, reactive.value]):
     @reactive.event(input.save_results)
     def _():
         results = get_streaming_node_rank().to_markdown() + "\n"
-        results += get_batch_node_rank().to_markdown() + "\n"
-        preprocessing_time_plot = (
-            "preprocessing_time_per_edge",
-            get_preprocessing_time_plot(),
-        )
+        if input.with_batch():
+            results += get_batch_node_rank().to_markdown() + "\n"
         calculation_time_plot = (
             "calculation_time_per_edge",
             get_calculation_time_plot(),
         )
         memory_history_plot = ("memory_history", get_memory_history_plot())
-        plots = [preprocessing_time_plot, calculation_time_plot, memory_history_plot]
+        plots = [calculation_time_plot, memory_history_plot]
         save_results(input.experiment_name(), results, plots)
