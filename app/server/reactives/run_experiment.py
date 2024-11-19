@@ -51,7 +51,7 @@ def server_run_experiment(
             errors.set(traceback.format_exc())
 
         results["streaming"].set(runner.get_stream_results())
-        # results["batch"].set(runner.get_batch_results())
-        # results["preprocessing_time"].set(runner.preprocessing_time_per_edge)
+        if input.with_batch():
+            results["batch"].set(runner.get_batch_results())
         results["calculation_time"].set(runner.calculation_time_per_edge)
         results["memory"].set(runner.memory_history)
