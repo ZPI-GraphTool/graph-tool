@@ -93,7 +93,7 @@ bslib-input-dark-mode {
 
 #run_experiment {
   margin-top: auto;
-  margin-bottom: 5vh;
+  margin-bottom: -2.5rem;
 }
 
 #save_results_button:has(#save_results) + #run_experiment {

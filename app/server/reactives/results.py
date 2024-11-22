@@ -19,7 +19,6 @@ def server_results(input: Inputs, results: dict[str, reactive.Value]):
         return pd.DataFrame(results["streaming"].get(), columns=["node", "value"])
 
     @render.ui
-    @reactive.event(input.run_experiment)
     def streaming_node_rank() -> Tag:
         return ui.card(
             ui.card_header("Streaming node rank"),
@@ -32,7 +31,6 @@ def server_results(input: Inputs, results: dict[str, reactive.Value]):
         return pd.DataFrame(results["batch"].get(), columns=["node", "value"])
 
     @render.ui
-    @reactive.event(input.run_experiment)
     def batch_node_rank() -> Tag | None:
         if not input.with_batch():
             return None
@@ -54,7 +52,6 @@ def server_results(input: Inputs, results: dict[str, reactive.Value]):
         return line_plot
 
     @render.ui
-    @reactive.event(input.run_experiment)
     def calculation_time_plot() -> Tag:
         return ui.card(
             ui.card_header("Calculation time"),
@@ -74,12 +71,48 @@ def server_results(input: Inputs, results: dict[str, reactive.Value]):
         return line_plot
 
     @render.ui
-    @reactive.event(input.run_experiment)
     def memory_history_plot() -> Tag:
         return ui.card(
-            ui.card_header("Memory history"),
+            ui.card_header("Memory graph"),
             render_widget(get_memory_history_plot),  # type: ignore
             full_screen=True,
+        )
+
+    @render.ui
+    def comparison_metrics() -> Tag:
+        return ui.card(
+            ui.card_header("Comparison metrics"),
+            ui.row(
+                ui.input_selectize(
+                    "node_rank_order",
+                    label="Sorting order",
+                    choices=["Ascending", "Descending"],
+                    width="50%",
+                ),
+                ui.input_numeric(
+                    "node_rank_cardinality",
+                    label="Cardinality of node rank",
+                    value=10,
+                    min=1,
+                    width="50%",
+                ),
+            ),
+            ui.row(
+                ui.column(
+                    6,
+                    ui.card(
+                        ui.card_header("Jaccard similarity"),
+                        results["jaccard_similarity"].get(),
+                    ),
+                ),
+                ui.column(
+                    6,
+                    ui.card(
+                        ui.card_header("Streaming accuracy"),
+                        results["streaming_accuracy"].get(),
+                    ),
+                ),
+            ),
         )
 
     @render.ui
@@ -89,7 +122,7 @@ def server_results(input: Inputs, results: dict[str, reactive.Value]):
             (
                 ui.output_ui("streaming_node_rank"),
                 ui.output_ui("batch_node_rank"),
-                ui.output_ui("memory_history_plot"),
+                ui.output_ui("comparison_metrics"),
             )
             if input.with_batch()
             else (
@@ -101,6 +134,23 @@ def server_results(input: Inputs, results: dict[str, reactive.Value]):
             *columns,
             max_height="50%",
             col_widths=[3, 3, 6] if input.with_batch() else [3, 9],
+        )
+
+    @render.ui
+    @reactive.event(input.run_experiment)
+    def results_second_row() -> Tag:
+        columns = (
+            [
+                ui.output_ui("memory_history_plot"),
+                ui.output_ui("calculation_time_plot"),
+            ]
+            if input.with_batch()
+            else [ui.output_ui("calculation_time_plot")]
+        )
+        return ui.layout_columns(
+            *columns,
+            max_height="50%",
+            col_widths=[6, 6] if input.with_batch() else [12],
         )
 
     @render.ui

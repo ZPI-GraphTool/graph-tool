@@ -11,6 +11,7 @@ from demos import (
 from shiny import Inputs, reactive, render, ui
 
 from ..logic.actions import AlgorithmType
+from ..logic.interfaces import BatchAlgorithm, PreprocessEdge, StreamingAlgorithm
 
 
 def get_class_name_from(file_path: Path) -> str | None:
@@ -22,7 +23,13 @@ def get_class_name_from(file_path: Path) -> str | None:
     spec.loader.exec_module(module)  # type: ignore
 
     for name_local in dir(module):
-        if inspect.isclass(getattr(module, name_local)):
+        mysterious_thing = getattr(module, name_local)
+        if not inspect.isclass(mysterious_thing):
+            continue
+        MysteriousClass = mysterious_thing
+        if not inspect.isabstract(MysteriousClass) and issubclass(
+            MysteriousClass, (BatchAlgorithm, PreprocessEdge, StreamingAlgorithm)
+        ):
             return name_local
 
 

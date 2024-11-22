@@ -15,12 +15,16 @@ streaming_results = reactive.value()
 batch_results = reactive.value()
 calculation_time = reactive.value()
 memory_history = reactive.value()
+jaccard_similarity = reactive.value()
+streaming_accuracy = reactive.value()
 
 results = {
     "streaming": streaming_results,
     "batch": batch_results,
     "calculation_time": calculation_time,
     "memory": memory_history,
+    "jaccard_similarity": jaccard_similarity,
+    "streaming_accuracy": streaming_accuracy,
 }
 
 
@@ -33,7 +37,7 @@ def server(input: Inputs, output: Outputs, session: Session):
     @reactive.effect
     @reactive.event(errors)
     def show_error_modal():
-        modal = ui.modal(str(errors.get()), title="Error", easy_close=True)
+        modal = ui.modal(str(errors.get()), title="Error", easy_close=True, size="l")
         ui.modal_show(modal)
 
     @reactive.effect
