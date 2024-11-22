@@ -4,14 +4,17 @@ import os
 import sys
 import time
 from pathlib import Path
+from typing import Any
 
 from pympler.asizeof import asizeof
 
 from .file_reading import CSVFile, FileProcessingStrategy, MTXFile, TEXTFile
-from .interfaces import BatchAlgorithm, PreprocessEdge, StreamingAlgorithm
+from .interfaces import BatchAlgorithm, PreprocessEdge, StreamingAlgorithm, numeric
 
 
-def get_class_instance_from(file_path: Path) -> object:
+def get_class_instance_from(
+    file_path: Path,
+) -> BatchAlgorithm | PreprocessEdge | StreamingAlgorithm | None:
     module_name = os.path.basename(file_path)
 
     spec = importlib.util.spec_from_file_location(str(file_path), file_path)
@@ -20,10 +23,13 @@ def get_class_instance_from(file_path: Path) -> object:
     spec.loader.exec_module(module)  # type: ignore
 
     for name_local in dir(module):
-        if not inspect.isclass(getattr(module, name_local)):
+        mysterious_thing = getattr(module, name_local)
+        if not inspect.isclass(mysterious_thing):
             continue
-        MysteriousClass = getattr(module, name_local)
-        if not inspect.isabstract(MysteriousClass):
+        MysteriousClass = mysterious_thing
+        if not inspect.isabstract(MysteriousClass) and issubclass(
+            MysteriousClass, (BatchAlgorithm, PreprocessEdge, StreamingAlgorithm)
+        ):
             return MysteriousClass()
 
 
@@ -49,8 +55,7 @@ class Runner:
             # dont ask
             if self._with_preprocessing:
                 self._file_reading: FileProcessingStrategy = TEXTFile(
-                    self._dataset,
-                    self._preprocessing.create_edge_from,  # type: ignore
+                    self._dataset, self._preprocessing.create_edge_from
                 )
             else:
                 self._file_reading: FileProcessingStrategy = TEXTFile(self._dataset)
@@ -92,10 +97,10 @@ class Runner:
 
     def validate_algorithm_signatures(self, row_data) -> tuple[bool, str]:
         stream_signature = (
-            inspect.signature(self._streaming.on_edge_calculate)  # type: ignore
+            inspect.signature(self._streaming.on_edge_calculate)
             .parameters["edge"]
             .annotation
-        )  # type: ignore
+        )
         are_params_correct = type(row_data) is stream_signature
         message = ""
         if not are_params_correct:
@@ -103,32 +108,32 @@ class Runner:
 
         if self._with_preprocessing:
             preprocessing_signature = (
-                inspect.signature(self._preprocessing.create_edge_from)  # type: ignore
+                inspect.signature(self._preprocessing.create_edge_from)
                 .parameters["line"]
                 .annotation
-            )  # type: ignore
+            )
             are_params_correct = (
                 are_params_correct or type(row_data) is preprocessing_signature
-            )  # type: ignore
+            )
             message += f"The given row data type: {type(row_data)} does not match the line parameter {preprocessing_signature} in the provided preprocessing.\n"
 
         return are_params_correct, message
 
-    def get_stream_results(self):
-        return self._streaming.submit_results()  # type: ignore
+    def get_stream_results(self) -> list[tuple[Any, numeric]]:
+        return self._streaming.submit_results()
 
-    def get_batch_results(self):
-        return self._batch.submit_results()  # type: ignore
+    def get_batch_results(self) -> list[tuple[Any, numeric]]:
+        return self._batch.submit_results() if self._with_batch else []
 
-    def get_jaccard_similarity(self):
+    def get_jaccard_similarity(self) -> float:
         set_a = set(self.get_stream_results())
         set_b = set(self.get_batch_results())
 
-        intersec = set_a.intersection(set_b)
+        intersection = set_a.intersection(set_b)
         union = set_a.union(set_b)
-        return float(len(intersec)) / float(len(union))
+        return float(len(intersection)) / float(len(union))
 
-    def get_streaming_accuracy(self):
+    def get_streaming_accuracy(self) -> float:
         streaming_results = self.get_stream_results()
         batch_results = self.get_batch_results()
         correct = 0
@@ -138,23 +143,23 @@ class Runner:
 
         return correct / len(streaming_results)
 
-    def validate_implementation(self):
-        if not isinstance(self._streaming, StreamingAlgorithm):  # type: ignore
+    def validate_implementation(self) -> None:
+        if not isinstance(self._streaming, StreamingAlgorithm):
             raise TypeError(
                 "Streaming algorithm is not implemeted right - cannot instantiate StreamingAlgorithm interface. Check if all methods have been supplied together with the right method name."
             )
-        elif self._with_batch and (not isinstance(self._batch, BatchAlgorithm)):  # type:ignore
+        elif self._with_batch and (not isinstance(self._batch, BatchAlgorithm)):
             raise TypeError(
                 "Batch algorithm is not implemeted right - cannot instantiate BatchAlgorithm interface. Check if all methods have been supplied together with the right method name."
             )
         elif self._with_preprocessing and (
             not isinstance(self._preprocessing, PreprocessEdge)
-        ):  # type:ignore
+        ):
             raise TypeError(
                 "Preprocessing algorithm is not implemeted right - cannot instantiate PreprocessEdge interface. Check if all methods have been supplied together with the right method name."
             )
 
-    def run(self):
+    def run_experiment(self):
         # process = psutil.Process(os.getpid())
 
         # MB_ratio = 1/(1024*1024)
@@ -162,17 +167,16 @@ class Runner:
         self._memory_history.append(asizeof(self._streaming))
 
         with open(self._dataset, encoding="utf-8") as file:
-            reader = self._file_reading.get_reader(file)  # type: ignore
+            reader = self._file_reading.get_reader(file)
             self._file_reading.set_headers(reader)
 
             for row in reader:  # type: ignore
-                self._processed_edge_count += 1
-
                 row = self._file_reading.process_row(row)
+                self._processed_edge_count += 1
 
                 if self._with_preprocessing:
                     preprocessing_start = time.perf_counter_ns()
-                    row = self._preprocessing.create_edge_from(row)  # type: ignore
+                    row = self._preprocessing.create_edge_from(row)
                     preprocessing_end = time.perf_counter_ns()
                     preprocessing_duration = preprocessing_end - preprocessing_start
                     self._preprocessing_time_per_edge.append(preprocessing_duration)
@@ -180,8 +184,8 @@ class Runner:
                 property_start = time.perf_counter_ns()
                 self._streaming.on_edge_calculate(row, "start_stop", "end_stop")  # type: ignore
                 property_end = time.perf_counter_ns()
-                property_calculation_duration = property_end - property_start
-                self._calculation_time_per_edge.append(property_calculation_duration)
+                calculation_duration = property_end - property_start
+                self._calculation_time_per_edge.append(calculation_duration)
 
                 # self._memory_history.append(process.memory_info().rss*MB_ratio)
                 self._memory_history.append(asizeof(self._streaming))

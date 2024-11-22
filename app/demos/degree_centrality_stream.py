@@ -1,8 +1,10 @@
-from server.logic.interfaces import StreamingAlgorithm
+from typing import Any
+
+from server.logic.interfaces import StreamingAlgorithm, numeric
 
 
 class DegreeCentralityAccurateVersion(StreamingAlgorithm):
-    def __init__(self):
+    def __init__(self) -> None:
         self.degrees = {}
         self.results = {}
 
@@ -11,7 +13,7 @@ class DegreeCentralityAccurateVersion(StreamingAlgorithm):
         edge: dict,
         edge_start_name: str | None = "start",
         edge_end_name: str | None = "end",
-    ):
+    ) -> None:
         vertex_start = edge[edge_start_name]
         vertex_end = edge[edge_end_name]
 
@@ -34,5 +36,5 @@ class DegreeCentralityAccurateVersion(StreamingAlgorithm):
         for k, v in self.results.items():
             self.results[k] = self.degrees[k] / (number_of_nodes - 1)
 
-    def submit_results(self):
+    def submit_results(self) -> list[tuple[Any, numeric]]:
         return sorted(self.results.items(), key=lambda item: item[1], reverse=True)

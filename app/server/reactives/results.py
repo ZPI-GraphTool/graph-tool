@@ -1,15 +1,15 @@
+import faicons as fa
 import pandas as pd
 import plotly.express as px
-from plotly.graph_objs import Figure, Layout
+from htmltools import Tag
+from plotly.graph_objs import Figure
 from shiny import Inputs, reactive, render, ui
 from shinywidgets import render_widget
 
 from ..logic.actions import save_results
 
-test_template = dict(layout=Layout())
 
-
-def server_results(input: Inputs, results: dict[str, reactive.value]):
+def server_results(input: Inputs, results: dict[str, reactive.Value]):
     @reactive.calc
     def plotly_template() -> str:
         return "plotly_dark" if input.mode() == "dark" else "plotly"
@@ -20,13 +20,11 @@ def server_results(input: Inputs, results: dict[str, reactive.value]):
 
     @render.ui
     @reactive.event(input.run_experiment)
-    def streaming_node_rank():
-        return (
-            ui.card(
-                ui.card_header("Streaming node rank"),
-                render.data_frame(get_streaming_node_rank),
-                full_screen=True,
-            ),
+    def streaming_node_rank() -> Tag:
+        return ui.card(
+            ui.card_header("Streaming node rank"),
+            render.data_frame(get_streaming_node_rank),
+            full_screen=True,
         )
 
     @reactive.calc
@@ -35,17 +33,13 @@ def server_results(input: Inputs, results: dict[str, reactive.value]):
 
     @render.ui
     @reactive.event(input.run_experiment)
-    def batch_node_rank():
-        return (
-            (
-                ui.card(
-                    ui.card_header("Batch node rank"),
-                    render.data_frame(get_batch_node_rank),
-                    full_screen=True,
-                ),
-            )
-            if input.with_batch()
-            else None
+    def batch_node_rank() -> Tag | None:
+        if not input.with_batch():
+            return None
+        return ui.card(
+            ui.card_header("Batch node rank"),
+            render.data_frame(get_batch_node_rank),
+            full_screen=True,
         )
 
     @reactive.calc
@@ -61,13 +55,11 @@ def server_results(input: Inputs, results: dict[str, reactive.value]):
 
     @render.ui
     @reactive.event(input.run_experiment)
-    def calculation_time_plot():
-        return (
-            ui.card(
-                ui.card_header("Calculation time"),
-                render_widget(get_calculation_time_plot),  # type: ignore
-                full_screen=True,
-            ),
+    def calculation_time_plot() -> Tag:
+        return ui.card(
+            ui.card_header("Calculation time"),
+            render_widget(get_calculation_time_plot),  # type: ignore
+            full_screen=True,
         )
 
     @reactive.calc
@@ -83,18 +75,47 @@ def server_results(input: Inputs, results: dict[str, reactive.value]):
 
     @render.ui
     @reactive.event(input.run_experiment)
-    def memory_history_plot():
-        return (
-            ui.card(
-                ui.card_header("Memory history"),
-                render_widget(get_memory_history_plot),  # type: ignore
-                full_screen=True,
-            ),
+    def memory_history_plot() -> Tag:
+        return ui.card(
+            ui.card_header("Memory history"),
+            render_widget(get_memory_history_plot),  # type: ignore
+            full_screen=True,
+        )
+
+    @render.ui
+    @reactive.event(input.run_experiment)
+    def results_first_row() -> Tag:
+        columns = (
+            (
+                ui.output_ui("streaming_node_rank"),
+                ui.output_ui("batch_node_rank"),
+                ui.output_ui("memory_history_plot"),
+            )
+            if input.with_batch()
+            else (
+                ui.output_ui("streaming_node_rank"),
+                ui.output_ui("memory_history_plot"),
+            )
+        )
+        return ui.layout_columns(
+            *columns,
+            max_height="50%",
+            col_widths=[3, 3, 6] if input.with_batch() else [3, 9],
+        )
+
+    @render.ui
+    @reactive.event(input.run_experiment)
+    def save_results_button() -> Tag:
+        return ui.input_action_button(
+            "save_results",
+            "Save results",
+            icon=fa.icon_svg("floppy-disk"),
+            class_="btn-outline-success",
         )
 
     @reactive.effect
     @reactive.event(input.save_results)
-    def _():
+    def _() -> None:
         results = get_streaming_node_rank().to_markdown() + "\n"
         if input.with_batch():
             results += get_batch_node_rank().to_markdown() + "\n"

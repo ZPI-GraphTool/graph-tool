@@ -1,8 +1,9 @@
 import faicons as fa
+from htmltools import Tag
 from shiny import ui
 
 
-def batch() -> tuple:
+def batch() -> tuple[Tag, ...]:
     return (
         ui.input_switch("with_batch", "With batch algorithm", False),
         ui.panel_conditional(
@@ -21,6 +22,8 @@ def batch() -> tuple:
                 class_="selectize-row",
             ),
             ui.output_ui("batch_selectize"),
-            ui.input_action_button("edit_batch", "Edit batch algorithm"),
+            ui.input_action_button(
+                "edit_batch", "Edit batch algorithm", icon=fa.icon_svg("code")
+            ),
         ),
     )

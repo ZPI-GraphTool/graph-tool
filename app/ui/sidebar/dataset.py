@@ -1,7 +1,8 @@
+from htmltools import Tag
 from shiny import ui
 
 
-def dataset() -> tuple:
+def dataset() -> tuple[Tag, ...]:
     return (
         ui.input_selectize(
             "select_dataset",

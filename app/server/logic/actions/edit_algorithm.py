@@ -3,7 +3,7 @@ import shutil
 from enum import StrEnum
 from pathlib import Path
 
-from .open_file_in_editor import open_file_in_editor
+from .open_file import open_file
 
 ALGORITHMS_DIRECTORY = Path(__file__).parents[3] / "algorithms"
 TEMPLATES_DIRECTORY = ALGORITHMS_DIRECTORY / "templates"
@@ -44,6 +44,6 @@ def edit_algorithm(option: str, type: AlgorithmType) -> None:
     if option == "New":
         template, destination = AlgorithmTypeSpecification.paths(type)
         new_file_path = shutil.copy(template, destination)
-        open_file_in_editor(new_file_path)
+        open_file(new_file_path)
     else:
-        open_file_in_editor(Path(option))
+        open_file(Path(option))

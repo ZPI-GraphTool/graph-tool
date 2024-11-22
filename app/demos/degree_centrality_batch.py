@@ -1,12 +1,15 @@
+from typing import Any
+
 import networkx as nx
-from server.logic.interfaces import BatchAlgorithm
+import pandas as pd
+from server.logic.interfaces import BatchAlgorithm, numeric
 
 
 class DegreeCentralityBatch(BatchAlgorithm):
-    def __init__(self):
+    def __init__(self) -> None:
         self.results = {}
 
-    def calculate_property(self, data):
+    def calculate_property(self, data: pd.DataFrame) -> None:
         graph_type = nx.MultiDiGraph()
 
         graph = nx.from_pandas_edgelist(
@@ -18,9 +21,8 @@ class DegreeCentralityBatch(BatchAlgorithm):
         )
         self.results = nx.degree_centrality(graph)
 
-    def submit_results(self):
+    def submit_results(self) -> list[tuple[Any, numeric]]:
         degree_centralities = sorted(
             self.results.items(), key=lambda item: item[1], reverse=True
         )
-
         return degree_centralities

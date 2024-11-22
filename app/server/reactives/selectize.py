@@ -8,7 +8,9 @@ from demos import (
     DEGREE_CENTRALITY_BATCH_ALGORITHM_FILE,
     DEGREE_CENTRALITY_STREAM_ALGORITHM_FILE,
 )
-from shiny import reactive, render, ui
+from shiny import Inputs, reactive, render, ui
+
+from ..logic.actions import AlgorithmType
 
 
 def get_class_name_from(file_path: Path) -> str | None:
@@ -24,17 +26,17 @@ def get_class_name_from(file_path: Path) -> str | None:
             return name_local
 
 
-def get_algorithm_names(directory: str) -> dict[str, str]:
+def get_algorithm_names(type: AlgorithmType) -> dict[str, str]:
     algorithm_names: dict[str, str] = {}
-    algorithms_directory = Path(__file__).parents[2] / "algorithms" / directory
-    for i, algorithm_file in enumerate(algorithms_directory.glob("*.py")):
+    algorithms_directory = Path(__file__).parents[2] / "algorithms" / type
+    for algorithm_file in algorithms_directory.glob("*.py"):
         algorithm_name = get_class_name_from(algorithm_file)
         if algorithm_name is not None:
             algorithm_names.update({str(algorithm_file): algorithm_name})
     return algorithm_names
 
 
-def server_selectize(input):
+def server_selectize(input: Inputs) -> None:
     @render.ui
     @reactive.event(input.refresh_preprocessing_list, ignore_none=False)
     def preprocessing_selectize():
@@ -44,7 +46,7 @@ def server_selectize(input):
                 "",
                 {
                     "": {"New": "New function"},
-                    "Existing": get_algorithm_names("preprocessing"),
+                    "Existing": get_algorithm_names(AlgorithmType.PREPROCESSING),
                 },
                 selected="New",
             ),
@@ -59,7 +61,7 @@ def server_selectize(input):
                 "",
                 {
                     "": {"New": "New algorithm"},
-                    "Existing": get_algorithm_names("streaming"),
+                    "Existing": get_algorithm_names(AlgorithmType.STREAMING),
                     "Presupplied": {
                         str(
                             DEGREE_CENTRALITY_STREAM_ALGORITHM_FILE
@@ -79,7 +81,7 @@ def server_selectize(input):
                 "",
                 {
                     "": {"New": "New algorithm"},
-                    "Existing": get_algorithm_names("batch"),
+                    "Existing": get_algorithm_names(AlgorithmType.BATCH),
                     "Presupplied": {
                         str(
                             DEGREE_CENTRALITY_BATCH_ALGORITHM_FILE
