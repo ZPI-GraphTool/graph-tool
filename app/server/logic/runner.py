@@ -146,8 +146,9 @@ class Runner:
         # MB_ratio = 1/(1024*1024) 
         # self._memory_history.append([process.memory_info().rss*MB_ratio])
         self._memory_history.append(asizeof(self._streaming))
-        
-        with open(self._dataset, encoding="utf-8") as file:
+
+
+        with open(self._dataset, encoding = 'utf-8') as file:
             reader = self._file_reading.get_reader(file) # type: ignore
             self._file_reading.set_headers(reader)
 

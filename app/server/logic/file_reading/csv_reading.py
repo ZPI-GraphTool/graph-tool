@@ -1,4 +1,4 @@
-from processing_interface import FileProcessingStrategy
+from .processing_interface import FileProcessingStrategy
 import csv
 import pandas as pd
 
@@ -13,7 +13,7 @@ class CSVFile(FileProcessingStrategy):
         return reader
     
     def set_headers(self, reader ):
-        self._headers = reader.filednames
+        self._headers = reader.fieldnames
     
     def process_row(self, line):
         return line

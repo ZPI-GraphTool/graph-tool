@@ -1,4 +1,4 @@
-from processing_interface import FileProcessingStrategy
+from .processing_interface import FileProcessingStrategy
 
 import pandas as pd
 from pathlib import Path
