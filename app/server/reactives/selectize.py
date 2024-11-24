@@ -4,14 +4,19 @@ import os
 import sys
 from pathlib import Path
 
-from demos import (
-    DEGREE_CENTRALITY_BATCH_ALGORITHM_FILE,
-    DEGREE_CENTRALITY_STREAM_ALGORITHM_FILE,
-)
 from shiny import Inputs, reactive, render, ui
 
-from ..logic.actions import AlgorithmType
-from ..logic.interfaces import BatchAlgorithm, PreprocessEdge, StreamingAlgorithm
+from algorithms._config.interfaces import (
+    BatchAlgorithm,
+    PreprocessEdge,
+    StreamingAlgorithm,
+)
+from app.server._config import (
+    ALGORITHMS_DIRECTORY,
+    DEGREE_CENTRALITY_BATCH_ALGORITHM_FILE,
+    DEGREE_CENTRALITY_STREAM_ALGORITHM_FILE,
+    AlgorithmType,
+)
 
 
 def get_class_name_from(file_path: Path) -> str | None:
@@ -35,8 +40,8 @@ def get_class_name_from(file_path: Path) -> str | None:
 
 def get_algorithm_names(type: AlgorithmType) -> dict[str, str]:
     algorithm_names: dict[str, str] = {}
-    algorithms_directory = Path(__file__).parents[2] / "algorithms" / type
-    for algorithm_file in algorithms_directory.glob("*.py"):
+    algorithms_type_directory = ALGORITHMS_DIRECTORY / type
+    for algorithm_file in algorithms_type_directory.glob("*.py"):
         algorithm_name = get_class_name_from(algorithm_file)
         if algorithm_name is not None:
             algorithm_names.update({str(algorithm_file): algorithm_name})

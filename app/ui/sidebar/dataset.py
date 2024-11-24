@@ -9,7 +9,7 @@ def dataset() -> tuple[Tag, ...]:
             "Dataset",
             {
                 "Provided by me": {"0": "Custom dataset"},
-                "Presupplied": {"1": "Public transport connections"},
+                "Presupplied": {"1": "Wroclaw's public transport connections"},
             },
             selected="1",
         ),

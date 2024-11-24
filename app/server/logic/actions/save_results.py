@@ -3,10 +3,11 @@ from pathlib import Path
 
 from plotly.graph_objs import Figure
 
+from app.server._config import EXPERIMENTS_DIRECTORY
+
 from .open_file import open_file
 
 PlotList = list[tuple[str, Figure]]
-EXPERIMENTS_DIRECTORY = Path(__file__).parents[4] / "experiments"
 
 
 def dedent(message: str) -> str:

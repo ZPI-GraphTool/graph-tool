@@ -2,9 +2,10 @@ import traceback
 from pathlib import Path
 from typing import Any
 
-from demos import CONNECTIONS_CSV_FILE
-from server.logic import Runner
 from shiny import Inputs, reactive
+
+from app.server._config import CONNECTIONS_CSV_FILE
+from app.server.logic import Runner
 
 
 class MissingPathError(ValueError):

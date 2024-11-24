@@ -1,7 +1,7 @@
 from shiny import ui
 
+from ._static import STATIC_DIR, STYLES_CSS_FILE
 from .sidebar import sidebar
-from .static import STATIC_DIR, STYLES_CSS_FILE
 
 static_assets = STATIC_DIR
 

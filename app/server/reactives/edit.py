@@ -1,6 +1,7 @@
 from shiny import Inputs, reactive
 
-from ..logic.actions import AlgorithmType, edit_algorithm
+from app.server._config import AlgorithmType
+from app.server.logic.actions import edit_algorithm
 
 
 def server_edit(input: Inputs) -> None:

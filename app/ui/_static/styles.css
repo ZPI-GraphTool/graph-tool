@@ -1,0 +1,110 @@
+/* :root {
+  --bslib-sidebar-main-bg: #f8f8f8;
+}
+
+.popover {
+  --bs-popover-header-bg: #222;
+  --bs-popover-header-color: #fff;
+}
+
+.popover .btn-close {
+  filter: var(--bs-btn-close-white-filter);
+} */
+
+.fa {
+  margin: 0;
+}
+
+.nav-item {
+  display: none !important;
+}
+
+table {
+  --shiny-datagrid-grid-header-bgcolor: var(--bs-body-bg) !important;
+  --shiny-datagrid-grid-body-hover-bgcolor: var(--bs-body-bg) !important;
+}
+
+.sidebar-content {
+  position: relative;
+  top: -2.225rem;
+  height: 100%;
+}
+
+bslib-input-dark-mode {
+  position: fixed;
+  top: 0.9rem;
+  left: 14.25rem;
+}
+
+.action-button {
+  --bs-btn-padding-x: 0;
+}
+
+.refresh-button {
+  height: 1.5rem;
+  width: 1.5rem;
+  padding-left: 0.12rem;
+  --bs-btn-padding-x: 0;
+  --bs-btn-padding-y: 0;
+}
+
+.selectize-row {
+  align-items: flex-end;
+  margin-bottom: -1rem;
+}
+
+.selectize-label {
+  margin: 0;
+}
+
+#edit_streaming {
+  margin-top: -1rem;
+}
+
+#edit_preprocessing, #edit_batch {
+  margin-top: -2rem;
+}
+
+.form-switch:has(#with_preprocessing) {
+  margin-top: -1.5rem;
+}
+
+.form-switch:has(#with_batch) {
+  margin-top: -0.5rem;
+}
+
+#close_app {
+  position: fixed;
+  top: 0.55rem;
+  right: 0.9rem;
+  width: fit-content;
+  --bs-btn-padding-x: 1rem;
+  --bs-btn-padding-y: 0.4rem;
+}
+
+#refresh_preprocessing_list, #refresh_streaming_list, #refresh_batch_list {
+  border: none !important;
+}
+
+#refresh_preprocessing_list:hover, #refresh_streaming_list:hover, #refresh_batch_list:hover {
+  background-color: transparent !important;
+  color: unset !important;
+}
+
+#run_experiment {
+  margin-top: auto;
+  margin-bottom: -2.5rem;
+}
+
+#save_results_button:has(#save_results) + #run_experiment {
+  margin-top: unset;
+}
+
+#save_results_button {
+  padding-top: 5rem;
+}
+
+#save_results {
+  margin-top: auto;
+  margin-bottom: -0.5rem;
+}

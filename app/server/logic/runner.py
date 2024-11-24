@@ -8,8 +8,14 @@ from typing import Any
 
 from pympler.asizeof import asizeof
 
+from algorithms._config.interfaces import (
+    BatchAlgorithm,
+    PreprocessEdge,
+    StreamingAlgorithm,
+    numeric,
+)
+
 from .file_reading import CSVFile, FileProcessingStrategy, MTXFile, TEXTFile
-from .interfaces import BatchAlgorithm, PreprocessEdge, StreamingAlgorithm, numeric
 
 
 def get_class_instance_from(

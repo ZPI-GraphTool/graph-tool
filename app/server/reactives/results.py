@@ -6,7 +6,7 @@ from plotly.graph_objs import Figure
 from shiny import Inputs, reactive, render, ui
 from shinywidgets import render_widget
 
-from ..logic.actions import save_results
+from app.server.logic.actions import save_results
 
 
 def server_results(input: Inputs, results: dict[str, reactive.Value]):
@@ -73,7 +73,7 @@ def server_results(input: Inputs, results: dict[str, reactive.Value]):
     @render.ui
     def memory_history_plot() -> Tag:
         return ui.card(
-            ui.card_header("Memory graph"),
+            ui.card_header("Memory history"),
             render_widget(get_memory_history_plot),  # type: ignore
             full_screen=True,
         )
