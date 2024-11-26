@@ -77,9 +77,11 @@ jobs:
 
       - name: Copy internal files
         run: cp -r ./.to_add_to_internal/* ./dist/NetworkStreamTool/_internal/
+        shell: bash
 
       - name: Copy algorithms, demos and experiments directories
         run: cp -r ./algorithms ./demos ./experiments ./dist/NetworkStreamTool/
+        shell: bash
 
       # - name: Archive build
       #   run: tar -czf NetworkStreamTool-${{ runner.os }}.tar.gz -C dist NetworkStreamTool
