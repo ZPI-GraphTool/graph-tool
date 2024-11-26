@@ -67,3 +67,15 @@ jobs:
 
       - name: Copy internal files
         run: cp -r ./.to_add_to_internal/* ./dist/NetworkStreamTool/_internal/
+
+      - name: Copy algorithms, demos and experiments directories
+        run: cp -r ./algorithms ./demos ./experiments ./dist/NetworkStreamTool/
+
+      - name: Archive build
+        run: tar -czf NetworkStreamTool-linux.tar.gz -C dist NetworkStreamTool
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: NetworkStreamTool-linux
+          path: NetworkStreamTool-linux.tar.gz
