@@ -2,7 +2,8 @@ version = 1
 requires-python = ">=3.12"
 resolution-markers = [
     "platform_system == 'Windows'",
-    "platform_system != 'Emscripten' and platform_system != 'Windows'",
+    "platform_system == 'Linux'",
+    "platform_system != 'Emscripten' and platform_system != 'Linux' and platform_system != 'Windows'",
     "platform_system == 'Emscripten'",
 ]
 
@@ -298,9 +299,25 @@ wheels = [
 name = "kaleido"
 version = "0.1.0.post1"
 source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "platform_system == 'Windows'",
+]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/1e/82/153cdbaf2df0ad39198108063be111b105c46d60e9d0335e668d6af69a6b/kaleido-0.1.0.post1-py2.py3-none-win32.whl", hash = "sha256:636aedcd89f359f54687b4fe331776a7224f7c31c27d03230e4e13c7cf4cb66a", size = 53233834 },
     { url = "https://files.pythonhosted.org/packages/41/90/51523adbedc808e03271c7448fd71da1660cc02603eaaf10b9ab4f102146/kaleido-0.1.0.post1-py2.py3-none-win_amd64.whl", hash = "sha256:2a942606a13c70dfd0a02e092ec140a1083e093ae06661c5e1b1179e477a9e44", size = 55954763 },
+]
+
+[[package]]
+name = "kaleido"
+version = "0.2.1.post1"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "platform_system == 'Linux'",
+    "platform_system != 'Emscripten' and platform_system != 'Linux' and platform_system != 'Windows'",
+    "platform_system == 'Emscripten'",
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/86/4b/d668e288b694661d2fbfc2b972db69cf1f30f8b8a91be14dcf9f000cab16/kaleido-0.2.1.post1-py2.py3-none-manylinux2014_armv7l.whl", hash = "sha256:d313940896c24447fc12c74f60d46ea826195fc991f58569a6e73864d53e5c20", size = 71653137 },
 ]
 
 [[package]]
@@ -454,7 +471,8 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "faicons" },
-    { name = "kaleido" },
+    { name = "kaleido", version = "0.1.0.post1", source = { registry = "https://pypi.org/simple" }, marker = "platform_system == 'Windows'" },
+    { name = "kaleido", version = "0.2.1.post1", source = { registry = "https://pypi.org/simple" }, marker = "platform_system != 'Windows'" },
     { name = "matplotlib" },
     { name = "networkx" },
     { name = "pandas" },
@@ -476,7 +494,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "faicons", specifier = ">=0.2.2" },
-    { name = "kaleido", marker = "platform_system != 'Windows'", specifier = "<=0.4.0" },
+    { name = "kaleido", marker = "platform_system != 'Windows'", specifier = "==0.2.1.post1" },
     { name = "kaleido", marker = "platform_system == 'Windows'", specifier = "==0.1.0.post1" },
     { name = "matplotlib", specifier = ">=3.9.2" },
     { name = "networkx", specifier = ">=3.4.2" },
