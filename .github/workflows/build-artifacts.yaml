@@ -18,8 +18,7 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: Sync dependencies
-        run: uv sync
-        if: steps.setup-uv.outputs.cache-hit == 'false'
+        run: uv sync --frozen
 
   linting:
     runs-on: ubuntu-latest
