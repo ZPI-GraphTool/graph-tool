@@ -9,3 +9,4 @@ runs:
         version: "latest"
 
     - run: uv sync
+      shell: bash
