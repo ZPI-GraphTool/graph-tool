@@ -7,8 +7,7 @@ class ConnectionPreprocess(PreprocessEdge):
     def __init__(self) -> None: ...
 
     def create_edge_from(self, line: Any) -> Sequence | dict:
-        print("Called create edge")
-        return ("", "")
+        return (line["start_stop"], line["end_stop"])
 
     # this does not make sense
     def set_number_of_headers_to_ignore(self, lines_to_ignore: int = 1):

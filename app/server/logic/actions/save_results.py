@@ -17,12 +17,13 @@ def dedent(message: str) -> str:
     return content
 
 
-def get_results_directory(experiment_name: str):
-    current_date = Path(datetime.now().strftime("%Y-%m-%d"))
-    current_time = Path(datetime.now().strftime("%H_%M_%S"))
-    experiment_path = experiment_name or current_date / current_time
-    results_directory = EXPERIMENTS_DIRECTORY / experiment_path
-    # make sure the directory exists
+def get_results_directory(experiment_name: str) -> Path:
+    try:
+        date_time = datetime.strptime(experiment_name, "%Y-%m-%d %H_%M_%S")
+        date, time = date_time.strftime("%Y-%m-%d"), date_time.strftime("%H_%M_%S")
+        results_directory = EXPERIMENTS_DIRECTORY / date / time
+    except ValueError:
+        results_directory = EXPERIMENTS_DIRECTORY / experiment_name
     results_directory.mkdir(parents=True, exist_ok=True)
     return results_directory
 

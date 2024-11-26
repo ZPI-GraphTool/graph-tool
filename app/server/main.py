@@ -11,20 +11,14 @@ from .reactives import (
 
 errors = reactive.value()
 
-streaming_results = reactive.value()
-batch_results = reactive.value()
-calculation_time = reactive.value()
-memory_history = reactive.value()
-jaccard_similarity = reactive.value()
-streaming_accuracy = reactive.value()
-
 results = {
-    "streaming": streaming_results,
-    "batch": batch_results,
-    "calculation_time": calculation_time,
-    "memory": memory_history,
-    "jaccard_similarity": jaccard_similarity,
-    "streaming_accuracy": streaming_accuracy,
+    "runner": reactive.value(),
+    "streaming_results": reactive.value(),
+    "batch_results": reactive.value(),
+    "calculation_time": reactive.value(),
+    "memory_history": reactive.value(),
+    "jaccard_similarity": reactive.value(),
+    "streaming_accuracy": reactive.value(),
 }
 
 

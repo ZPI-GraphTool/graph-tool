@@ -1,8 +1,9 @@
 import traceback
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from shiny import Inputs, reactive
+from shiny import Inputs, reactive, ui
 
 from app.server._config import CONNECTIONS_CSV_FILE
 from app.server.logic import Runner
@@ -38,11 +39,25 @@ def get_paths(input: Inputs) -> tuple[Any, ...]:
 
 
 def server_run_experiment(
-    input: Inputs, results: dict[str, reactive.Value], errors: reactive.Value
+    input: Inputs,
+    results: dict[str, reactive.Value],
+    errors: reactive.Value,
 ) -> None:
+    @ui.bind_task_button(button_id="run_experiment")
+    @reactive.extended_task
+    async def run_experiment(runner: Runner) -> None:
+        runner.validate_implementation()
+        runner.run_experiment()
+
+        results["runner"].set(runner)
+        results["streaming_results"].set(runner.get_stream_results())
+        results["batch_results"].set(runner.get_batch_results())
+        results["calculation_time"].set(runner.calculation_time_per_edge)
+        results["memory_history"].set(runner.memory_history)
+
     @reactive.effect
     @reactive.event(input.run_experiment)
-    def _():
+    def _() -> None:
         try:
             dataset_path, preprocess_path, streaming_path, batch_path = get_paths(input)
             runner = Runner(
@@ -51,22 +66,17 @@ def server_run_experiment(
                 streaming_path=streaming_path,
                 batch_path=batch_path,
             )
-            runner.validate_implementation()
-            runner.run_experiment()
-        except TypeError as type_error:
-            errors.set(type_error)
+            run_experiment(runner)
+            ui.update_text(
+                "experiment_name", value=datetime.now().strftime("%Y-%m-%d %H_%M_%S")
+            )
         except MissingPathError as missing_path_error:
             errors.set(missing_path_error)
+        except TypeError as type_error:
+            errors.set(type_error)
         except UnicodeDecodeError:
             errors.set(
                 "The dataset you provided is not in a UTF-8-compatible encoding."
             )
         except Exception:
             errors.set(traceback.format_exc())
-        else:
-            results["streaming"].set(runner.get_stream_results())
-            results["batch"].set(runner.get_batch_results())
-            results["calculation_time"].set(runner.calculation_time_per_edge)
-            results["memory"].set(runner.memory_history)
-            results["jaccard_similarity"].set(runner.get_jaccard_similarity())
-            results["streaming_accuracy"].set(runner.get_streaming_accuracy())

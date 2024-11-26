@@ -33,6 +33,7 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     hide_console='hide-early',
+    icon='C:\\Users\\mikorzen\\Coding\\network-stream-tool\\icon.ico',
 )
 coll = COLLECT(
     exe,

@@ -1,5 +1,3 @@
-from datetime import datetime
-
 import faicons as fa
 from shiny import ui
 
@@ -17,17 +15,15 @@ sidebar = ui.sidebar(
     *preprocessing(),
     *streaming(),
     *batch(),
+    ui.tags.div(class_="flex-divider"),
     ui.output_ui("save_results_button"),
-    ui.input_action_button(
+    ui.input_task_button(
         "run_experiment",
         "Run experiment",
         icon=fa.icon_svg("play"),
+        label_busy="Running...",
         class_="btn-outline-primary",
     ),
     width=320,
-    title=ui.input_text(
-        "experiment_name",
-        label="Experiment name",
-        placeholder=datetime.now().strftime("%Y-%m-%d %H_%M_%S"),
-    ),
+    title=ui.input_text("experiment_name", label="Experiment name"),
 )

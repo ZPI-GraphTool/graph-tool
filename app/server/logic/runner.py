@@ -12,10 +12,11 @@ from algorithms._config.interfaces import (
     BatchAlgorithm,
     PreprocessEdge,
     StreamingAlgorithm,
-    numeric,
 )
 
 from .file_reading import CSVFile, FileProcessingStrategy, MTXFile, TEXTFile
+
+ResultList = list[tuple[Any, int | float]]
 
 
 def get_class_instance_from(
@@ -37,6 +38,10 @@ def get_class_instance_from(
             MysteriousClass, (BatchAlgorithm, PreprocessEdge, StreamingAlgorithm)
         ):
             return MysteriousClass()
+
+
+def get_sampling_interval(total_count: int, sample_count: int) -> int:
+    return total_count // sample_count
 
 
 class Runner:
@@ -70,6 +75,11 @@ class Runner:
         self._calculation_time_per_edge = []
         self._preprocessing_time_per_edge = []
 
+        with open(self._dataset, encoding="utf-8") as file:
+            reader = self._file_reading.get_reader(file)
+            self._file_reading.set_headers(reader)
+            self._row_count = sum(1 for _ in reader)
+
         # Saves the amount of stored memory in RAM (non-swapped) in MB by this runner process
         # psutil implementation - will include everything including the sizes of the history and of the stream, batch object
         # stops recording when the streaming algorithm is done computing
@@ -90,15 +100,23 @@ class Runner:
     # getters for metrics and results -
     # some of them are optional (like results from batch) => changed method tuple return to getters
     @property
-    def calculation_time_per_edge(self):
+    def edge_count(self) -> int:
+        return self._row_count
+
+    @property
+    def dataset_size(self) -> int:
+        return self._dataset.stat().st_size
+
+    @property
+    def calculation_time_per_edge(self) -> list[int]:
         return self._calculation_time_per_edge
 
     @property
-    def preprocessing_time_per_edge(self):
+    def preprocessing_time_per_edge(self) -> list[int]:
         return self._preprocessing_time_per_edge
 
     @property
-    def memory_history(self):
+    def memory_history(self) -> list[int]:
         return self._memory_history
 
     def validate_algorithm_signatures(self, row_data) -> tuple[bool, str]:
@@ -125,23 +143,38 @@ class Runner:
 
         return are_params_correct, message
 
-    def get_stream_results(self) -> list[tuple[Any, numeric]]:
+    def get_stream_results(self) -> ResultList:
         return self._streaming.submit_results()
 
-    def get_batch_results(self) -> list[tuple[Any, numeric]]:
+    def get_batch_results(self) -> ResultList:
         return self._batch.submit_results() if self._with_batch else []
 
-    def get_jaccard_similarity(self) -> float:
-        set_a = set(self.get_stream_results())
-        set_b = set(self.get_batch_results())
+    def get_parameterized_results(
+        self, orderDescending: bool, cardinality: int
+    ) -> tuple[ResultList, ResultList]:
+        streaming_results = sorted(self.get_stream_results(), reverse=orderDescending)
+        batch_results = sorted(self.get_batch_results(), reverse=orderDescending)
+        return streaming_results[:cardinality], batch_results[:cardinality]
+
+    def get_jaccard_similarity(
+        self, orderDescending: bool, cardinality: int = 10
+    ) -> float:
+        streaming_results, batch_results = self.get_parameterized_results(
+            orderDescending, cardinality
+        )
+        set_a = set(streaming_results)
+        set_b = set(batch_results)
 
         intersection = set_a.intersection(set_b)
         union = set_a.union(set_b)
         return float(len(intersection)) / float(len(union))
 
-    def get_streaming_accuracy(self) -> float:
-        streaming_results = self.get_stream_results()
-        batch_results = self.get_batch_results()
+    def get_streaming_accuracy(
+        self, orderDescending: bool = False, cardinality: int = 10
+    ) -> float:
+        streaming_results, batch_results = self.get_parameterized_results(
+            orderDescending, cardinality
+        )
         correct = 0
         for stream, batch in zip(streaming_results, batch_results):
             if stream[0] == batch[0]:
@@ -165,20 +198,18 @@ class Runner:
                 "Preprocessing algorithm is not implemeted right - cannot instantiate PreprocessEdge interface. Check if all methods have been supplied together with the right method name."
             )
 
-    def run_experiment(self):
+    def run_experiment(self, sample_count: int = 100) -> None:
+        sampling_interval = get_sampling_interval(self._row_count, sample_count)
         # process = psutil.Process(os.getpid())
 
         # MB_ratio = 1/(1024*1024)
         # self._memory_history.append([process.memory_info().rss*MB_ratio])
-        self._memory_history.append(asizeof(self._streaming))
 
         with open(self._dataset, encoding="utf-8") as file:
             reader = self._file_reading.get_reader(file)
-            self._file_reading.set_headers(reader)
 
             for row in reader:  # type: ignore
                 row = self._file_reading.process_row(row)
-                self._processed_edge_count += 1
 
                 if self._with_preprocessing:
                     preprocessing_start = time.perf_counter_ns()
@@ -193,8 +224,11 @@ class Runner:
                 calculation_duration = property_end - property_start
                 self._calculation_time_per_edge.append(calculation_duration)
 
-                # self._memory_history.append(process.memory_info().rss*MB_ratio)
-                self._memory_history.append(asizeof(self._streaming))
+                if self._processed_edge_count % sampling_interval == 0:
+                    self._memory_history.append(
+                        (self._processed_edge_count, asizeof(self._streaming))
+                    )
+                self._processed_edge_count += 1
 
             if self._with_batch:
                 self._batch.calculate_property(self._file_reading.get_dataframe())  # type: ignore

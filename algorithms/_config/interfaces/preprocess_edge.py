@@ -32,15 +32,3 @@ class PreprocessEdge(ABC):
         Processed data row converted into a tuple
         """
         ...
-
-    @abstractmethod
-    def set_number_of_headers_to_ignore(self, lines_to_ignore: int = 1) -> None:
-        """
-        Sets the number of header lines in the base data file to ignore.
-
-        Parameters
-        ----------
-        lines_to_ignore: int
-            Number of first lines to omit
-        """
-        ...
