@@ -17,6 +17,7 @@ class MissingPathError(ValueError):
 
 
 def select_dataset(option: str, path: list[dict[str, str]]) -> Path:
+    dataset_path = Path()
     match option:
         case "0":
             if path is None:

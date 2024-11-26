@@ -33,7 +33,7 @@ class BatchAlgorithm(ABC):
 
         Returns
         -------
-        Results in the form of a node rank - a list of a number of nodes each with a numerical value
+        Result in the form of a node rank - a list of a number of nodes each with a numerical value
         indicating the calculated property of the node.
         """
         ...
@@ -45,7 +45,7 @@ class BatchAlgorithm(ABC):
 
         Returns
         -------
-        Results in the form of a node rank - a list of a number of nodes each with a numerical value
+        Result in the form of a node rank - a list of a number of nodes each with a numerical value
         indicating the calculated property of the node.
         """
         ...
