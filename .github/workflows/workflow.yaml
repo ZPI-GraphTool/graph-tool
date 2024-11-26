@@ -18,7 +18,7 @@ jobs:
       - name: Cache virtual environment
         uses: actions/cache@v3
         with:
-          key: ${{ runner.os }}-uv-${{ hashFiles('**/uv.lock') }}
+          key: ${{ runner.os }}-uv-venv
           path: ./.venv
 
   linting:
@@ -31,7 +31,7 @@ jobs:
       - name: Restore virtual environment
         uses: actions/cache@v3
         with:
-          key: ${{ runner.os }}-uv-${{ hashFiles('**/uv.lock') }}
+          key: ${{ runner.os }}-uv-venv
           path: ./.venv
 
       - run: uvx ruff check .
@@ -46,7 +46,7 @@ jobs:
       - name: Restore virtual environment
         uses: actions/cache@v3
         with:
-          key: ${{ runner.os }}-uv-${{ hashFiles('**/uv.lock') }}
+          key: ${{ runner.os }}-uv-venv
           path: ./.venv
 
       - run: uvx ruff format --check .
@@ -61,7 +61,7 @@ jobs:
       - name: Restore virtual environment
         uses: actions/cache@v3
         with:
-          key: ${{ runner.os }}-uv-${{ hashFiles('**/uv.lock') }}
+          key: ${{ runner.os }}-uv-venv
           path: ./.venv
 
       - run: uv run pyright .
@@ -76,7 +76,7 @@ jobs:
       - name: Restore virtual environment
         uses: actions/cache@v3
         with:
-          key: ${{ runner.os }}-uv-${{ hashFiles('**/uv.lock') }}
+          key: ${{ runner.os }}-uv-venv
           path: ./.venv
 
       - run: uv run pyinstaller ./NetworkStreamTool.spec
