@@ -1,20 +1,33 @@
 on: [push]
 
 jobs:
-  linting:
+  lock:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - run: uv lock
+
+  linting:
+    runs-on: ubuntu-latest
+    requires: lock
+    steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
       - run: uvx ruff check .
 
   formatting:
     runs-on: ubuntu-latest
+    requires: lock
     steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
       - run: uvx ruff format --check .
 
   type_check:
     runs-on: ubuntu-latest
+    requires: lock
     steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
       - run: uv run pyright .

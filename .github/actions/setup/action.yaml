@@ -1,14 +1,9 @@
-name: "set up uv"
+name: "install uv"
 description: "Installs uv (a package and project manager) using the official community action."
 
 runs:
   using: composite
   steps:
-    - uses: actions/checkout@v4
-
     - uses: astral-sh/setup-uv@v3
       with:
         version: "latest"
-
-    - run: uv sync
-      shell: bash
