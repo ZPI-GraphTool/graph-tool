@@ -1,7 +1,8 @@
 version = 1
 requires-python = ">=3.12"
 resolution-markers = [
-    "platform_system != 'Emscripten'",
+    "platform_system == 'Windows'",
+    "platform_system != 'Emscripten' and platform_system != 'Windows'",
     "platform_system == 'Emscripten'",
 ]
 
@@ -475,7 +476,8 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "faicons", specifier = ">=0.2.2" },
-    { name = "kaleido", specifier = "==0.1.0.post1" },
+    { name = "kaleido", marker = "platform_system != 'Windows'", specifier = "<=0.4.0" },
+    { name = "kaleido", marker = "platform_system == 'Windows'", specifier = "==0.1.0.post1" },
     { name = "matplotlib", specifier = ">=3.9.2" },
     { name = "networkx", specifier = ">=3.4.2" },
     { name = "pandas", specifier = ">=2.2.3" },
