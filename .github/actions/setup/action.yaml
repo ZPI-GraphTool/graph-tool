@@ -4,6 +4,6 @@ runs:
   using: composite
   steps:
     - name: install latest uv
-      uses: astral-sh/setup-uv@3
+      uses: astral-sh/setup-uv@v3
       with:
         uv-version: "latest"
