@@ -13,8 +13,12 @@ from algorithms._config.interfaces import (
     PreprocessEdge,
     StreamingAlgorithm,
 )
+from app.server._config import (
+    CONNECTION_PREPROCESSING_FUNCTION_FILE,
+    CONNECTIONS_CSV_FILE,
+)
 
-from .file_reading import CSVFile, FileProcessingStrategy, MTXFile, TEXTFile
+from .file_reading import CSVFile, MTXFile, TEXTFile
 
 ResultList = list[tuple[Any, int | float]]
 
@@ -53,30 +57,32 @@ class Runner:
         batch_path: Path | None,
     ):
         self._dataset = dataset_path
+        if self._dataset == CONNECTIONS_CSV_FILE and preprocessing_path is None:
+            preprocessing_path = CONNECTION_PREPROCESSING_FUNCTION_FILE
         self._with_preprocessing = preprocessing_path is not None
         self._with_batch = batch_path is not None
 
         file_extension = self._dataset.suffix
 
         if file_extension == ".csv":
-            self._file_reading: FileProcessingStrategy = CSVFile(self._dataset)
+            self._file_reading = CSVFile(self._dataset)
         elif file_extension == ".mtx":
-            self._file_reading: FileProcessingStrategy = MTXFile(self._dataset)
+            self._file_reading = MTXFile(self._dataset)
         else:
             # dont ask
             if self._with_preprocessing:
-                self._file_reading: FileProcessingStrategy = TEXTFile(
+                self._file_reading = TEXTFile(
                     self._dataset, self._preprocessing.create_edge_from
                 )
             else:
-                self._file_reading: FileProcessingStrategy = TEXTFile(self._dataset)
+                self._file_reading = TEXTFile(self._dataset)
 
         # time inverals are now saved using the perf_counter_ns for greater precision
         self._calculation_time_per_edge = []
         self._preprocessing_time_per_edge = []
 
         with open(self._dataset, encoding="utf-8") as file:
-            reader = self._file_reading.get_reader(file)
+            reader: Any = self._file_reading.get_reader(file)
             self._file_reading.set_headers(reader)
             self._row_count = sum(1 for _ in reader)
 
@@ -209,7 +215,7 @@ class Runner:
             reader = self._file_reading.get_reader(file)
 
             for row in reader:  # type: ignore
-                row = self._file_reading.process_row(row)
+                row: Any = self._file_reading.process_row(row)
 
                 if self._with_preprocessing:
                     preprocessing_start = time.perf_counter_ns()
@@ -219,7 +225,7 @@ class Runner:
                     self._preprocessing_time_per_edge.append(preprocessing_duration)
 
                 property_start = time.perf_counter_ns()
-                self._streaming.on_edge_calculate(row, "start_stop", "end_stop")  # type: ignore
+                self._streaming.on_edge_calculate(row)  # type: ignore
                 property_end = time.perf_counter_ns()
                 calculation_duration = property_end - property_start
                 self._calculation_time_per_edge.append(calculation_duration)

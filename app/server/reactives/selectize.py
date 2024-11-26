@@ -13,6 +13,7 @@ from algorithms._config.interfaces import (
 )
 from app.server._config import (
     ALGORITHMS_DIRECTORY,
+    CONNECTION_PREPROCESSING_FUNCTION_FILE,
     DEGREE_CENTRALITY_BATCH_ALGORITHM_FILE,
     DEGREE_CENTRALITY_STREAM_ALGORITHM_FILE,
     AlgorithmType,
@@ -59,6 +60,11 @@ def server_selectize(input: Inputs) -> None:
                 {
                     "": {"New": "New function"},
                     "Existing": get_algorithms(AlgorithmType.PREPROCESSING),
+                    "Presupplied": {
+                        str(
+                            CONNECTION_PREPROCESSING_FUNCTION_FILE
+                        ): "Connection preprocessing",
+                    },
                 },
                 selected="New",
             ),

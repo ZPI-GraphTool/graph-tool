@@ -1,0 +1,9 @@
+name: "install uv"
+description: "Installs uv (a package and project manager) using the official community action."
+runs:
+  using: composite
+  steps:
+    - name: install latest uv
+      uses: astral-sh/setup-uv@3
+      with:
+        uv-version: "latest"

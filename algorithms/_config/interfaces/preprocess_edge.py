@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Sequence
+from typing import Sequence
 
 
 class PreprocessEdge(ABC):
@@ -18,13 +18,13 @@ class PreprocessEdge(ABC):
     """
 
     @abstractmethod
-    def create_edge_from(self, line: Any) -> Sequence | dict:
+    def create_edge_from(self, line: dict | Sequence) -> dict | Sequence:
         """
         Creates a tuple from one line row from the parsed dataset.
 
         Parameters
         ----------
-        line: Any
+        line: dict | Sequence
             Dataset row which could be any datatype depending on the format of the base file (e.g. string for .txt but dictionary for .csv)
 
         Returns
