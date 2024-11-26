@@ -19,7 +19,7 @@ jobs:
         uses: actions/cache@v3
         with:
           key: ${{ runner.os }}-uv-venv
-          path: ./.venv
+          path: ~/.venv
 
   linting:
     runs-on: ubuntu-latest
@@ -32,7 +32,7 @@ jobs:
         uses: actions/cache@v3
         with:
           key: ${{ runner.os }}-uv-venv
-          path: ./.venv
+          path: ~/.venv
 
       - run: uvx ruff check .
 
@@ -47,7 +47,7 @@ jobs:
         uses: actions/cache@v3
         with:
           key: ${{ runner.os }}-uv-venv
-          path: ./.venv
+          path: ~/.venv
 
       - run: uvx ruff format --check .
 
@@ -62,7 +62,7 @@ jobs:
         uses: actions/cache@v3
         with:
           key: ${{ runner.os }}-uv-venv
-          path: ./.venv
+          path: ~/.venv
 
       - run: uv run pyright .
 
@@ -77,7 +77,7 @@ jobs:
         uses: actions/cache@v3
         with:
           key: ${{ runner.os }}-uv-venv
-          path: ./.venv
+          path: ~/.venv
 
       - run: uv run pyinstaller ./NetworkStreamTool.spec
       - run: cp -r ./.to_add_to_internal/* ./dist/NetworkStreamTool/_internal/
