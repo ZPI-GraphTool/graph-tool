@@ -11,23 +11,15 @@ from .reactives import (
 
 errors = reactive.value()
 
-streaming_results = reactive.value()
-batch_results = reactive.value()
-preprocessing_time = reactive.value()
-calculation_time = reactive.value()
-memory_history = reactive.value()
-
 results = {
-    "streaming": streaming_results,
-    "batch": batch_results,
-    "preprocessing_time": preprocessing_time,
-    "calculation_time": calculation_time,
-    "memory": memory_history,
+    "runner": reactive.value(),
+    "streaming_results": reactive.value(),
+    "batch_results": reactive.value(),
+    "calculation_time": reactive.value(),
+    "memory_history": reactive.value(),
+    "jaccard_similarity": reactive.value(),
+    "streaming_accuracy": reactive.value(),
 }
-
-
-async def close_app():
-    os.kill(os.getpid(), 9)
 
 
 def server(input: Inputs, output: Outputs, session: Session):
@@ -38,13 +30,11 @@ def server(input: Inputs, output: Outputs, session: Session):
 
     @reactive.effect
     @reactive.event(errors)
-    def modal_error_display():
-        m = ui.modal(str(errors.get()), title="Error", easy_close=True)
-        ui.modal_show(m)
+    def show_error_modal():
+        modal = ui.modal(str(errors.get()), title="Error", easy_close=True, size="l")
+        ui.modal_show(modal)
 
     @reactive.effect
     @reactive.event(input.close_app)
-    async def close_session():
-        await session.close()
-
-    session.on_ended(close_app)
+    def close_app():
+        os.kill(os.getpid(), 9)

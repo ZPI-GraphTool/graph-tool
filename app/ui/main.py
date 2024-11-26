@@ -1,36 +1,19 @@
 from shiny import ui
 
+from ._static import STATIC_DIR, STYLES_CSS_FILE
 from .sidebar import sidebar
-from .static import STYLES_CSS_FILE
 
-app_ui = ui.page_navbar(
-    ui.nav_panel(
-        None,
-        ui.panel_conditional(
-            "input.with_batch == true",
-            ui.layout_columns(
-                ui.output_ui("streaming_node_rank"),
-                ui.output_ui("batch_node_rank"),
-                ui.output_ui("memory_history_plot"),
-                max_height="50%",
-                col_widths=[3, 3, 6],
-            ),
-        ),
-        ui.panel_conditional(
-            "input.with_batch == false",
-            ui.layout_columns(
-                ui.output_ui("streaming_node_rank"),
-                ui.output_ui("memory_history_plot"),
-                max_height="50%",
-                col_widths=[3, 9],
-            ),
-        ),
-        ui.output_ui("calculation_time_plot"),
+static_assets = STATIC_DIR
+
+app_ui = ui.page_sidebar(
+    sidebar,
+    ui.head_content(
+        ui.tags.link(rel="icon", href="/favicon.png"),
         ui.include_css(STYLES_CSS_FILE),
     ),
-    ui.nav_spacer(),
-    ui.nav_control(ui.input_action_button("close_app", label="Close")),
-    sidebar=sidebar,
+    ui.output_ui("results_first_row"),
+    ui.output_ui("results_second_row"),
     title="Network Stream Tool",
     fillable=True,
+    class_="bslib-page-dashboard",
 )

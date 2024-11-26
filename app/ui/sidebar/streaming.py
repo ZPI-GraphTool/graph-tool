@@ -1,8 +1,9 @@
 import faicons as fa
+from htmltools import Tag
 from shiny import ui
 
 
-def streaming() -> tuple:
+def streaming() -> tuple[Tag, ...]:
     return (
         ui.row(
             ui.column(10, "Streaming algorithm", class_="selectize-label"),
@@ -18,5 +19,9 @@ def streaming() -> tuple:
             class_="selectize-row",
         ),
         ui.output_ui("streaming_selectize"),
-        ui.input_action_button("edit_streaming", "Edit streaming algorithm"),
+        ui.input_action_button(
+            "edit_streaming",
+            "Edit streaming algorithm",
+            icon=fa.icon_svg("code"),
+        ),
     )

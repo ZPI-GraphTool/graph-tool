@@ -1,8 +1,9 @@
 import faicons as fa
+from htmltools import Tag
 from shiny import ui
 
 
-def preprocessing() -> tuple:
+def preprocessing() -> tuple[Tag, ...]:
     return (
         ui.panel_conditional(
             "input.with_preprocessing == true",
@@ -20,6 +21,10 @@ def preprocessing() -> tuple:
                 class_="selectize-row",
             ),
             ui.output_ui("preprocessing_selectize"),
-            ui.input_action_button("edit_preprocessing", "Edit preprocessing function"),
+            ui.input_action_button(
+                "edit_preprocessing",
+                "Edit preprocessing function",
+                icon=fa.icon_svg("code"),
+            ),
         ),
     )

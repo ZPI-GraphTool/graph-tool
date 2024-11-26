@@ -1,18 +1,14 @@
 import shelve
 import shutil
-from enum import StrEnum
 from pathlib import Path
 
-from .open_file_in_editor import open_file_in_editor
+from app.server._config import (
+    ALGORITHM_TEMPLATES_DIRECTORY,
+    ALGORITHMS_DIRECTORY,
+    AlgorithmType,
+)
 
-ALGORITHMS_DIRECTORY = Path(__file__).parents[3] / "algorithms"
-TEMPLATES_DIRECTORY = ALGORITHMS_DIRECTORY / "templates"
-
-
-class AlgorithmType(StrEnum):
-    PREPROCESSING = "preprocessing"
-    BATCH = "batch"
-    STREAMING = "streaming"
+from .open_file import open_file
 
 
 class AlgorithmTypeSpecification:
@@ -23,7 +19,7 @@ class AlgorithmTypeSpecification:
                 prefix = "function"
             case AlgorithmType.BATCH | AlgorithmType.STREAMING:
                 prefix = "algorithm"
-        # this caches how many files of each type have been created
+        # this caches how many files of each type have been created so far
         # so that we know what number to name the new file of a given type
         with shelve.open(ALGORITHMS_DIRECTORY / "counter") as counter:
             key = f"{type}_counter"
@@ -35,8 +31,10 @@ class AlgorithmTypeSpecification:
 
     @classmethod
     def paths(cls, type: AlgorithmType) -> tuple[Path, Path]:
-        template_path = TEMPLATES_DIRECTORY / f"template_{type}.py"
-        destination = ALGORITHMS_DIRECTORY / type / cls.new_file(type)
+        template_path = ALGORITHM_TEMPLATES_DIRECTORY / f"template_{type}.py"
+        destination_directory = ALGORITHMS_DIRECTORY / type
+        destination_directory.mkdir(parents=True, exist_ok=True)
+        destination = destination_directory / cls.new_file(type)
         return template_path, destination
 
 
@@ -44,6 +42,6 @@ def edit_algorithm(option: str, type: AlgorithmType) -> None:
     if option == "New":
         template, destination = AlgorithmTypeSpecification.paths(type)
         new_file_path = shutil.copy(template, destination)
-        open_file_in_editor(new_file_path)
+        open_file(new_file_path)
     else:
-        open_file_in_editor(Path(option))
+        open_file(Path(option))

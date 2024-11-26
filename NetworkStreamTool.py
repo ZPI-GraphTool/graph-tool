@@ -1,13 +1,10 @@
-import subprocess
-import sys
-import time
 import webbrowser
-from pathlib import Path
+from threading import Thread
 
-EXECUTABLE_DIRECTORY = Path(sys.executable).resolve().parent
-PYTHON_PATH = EXECUTABLE_DIRECTORY / ".venv" / "Scripts" / "python.exe"
+from app import shiny_app
 
 if __name__ == "__main__":
-    subprocess.Popen([str(PYTHON_PATH), "app/app.py"])
-    time.sleep(2)
+    run_shiny_app = Thread(target=shiny_app.run)
+    run_shiny_app.start()
     webbrowser.open("http://localhost:8000")
+    run_shiny_app.join()
