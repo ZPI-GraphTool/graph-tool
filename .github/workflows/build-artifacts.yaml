@@ -2,7 +2,7 @@ on: push
 
 jobs:
   setup:
-    runs-on: ubuntu-latest
+    runs-on: [ windows-latest, ubuntu-latest, macos-latest ]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -54,7 +54,7 @@ jobs:
         run: uv run pyright .
 
   build:
-    runs-on: ubuntu-latest
+    runs-on: [ windows-latest, ubuntu-latest, macos-latest ]
     needs: [setup, linting, formatting, type-check]
     steps:
       - name: Checkout code
@@ -72,11 +72,11 @@ jobs:
       - name: Copy algorithms, demos and experiments directories
         run: cp -r ./algorithms ./demos ./experiments ./dist/NetworkStreamTool/
 
-      - name: Archive build
-        run: tar -czf NetworkStreamTool-linux.tar -C dist NetworkStreamTool
+      # - name: Archive build
+      #   run: tar -czf NetworkStreamTool-${{ runner.os }}.tar.gz -C dist NetworkStreamTool
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: NetworkStreamTool-linux
-          path: NetworkStreamTool-linux.tar
+          name: NetworkStreamTool-${{ runner.os }}
+          path: dist/NetworkStreamTool
