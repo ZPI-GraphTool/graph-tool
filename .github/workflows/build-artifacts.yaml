@@ -2,7 +2,7 @@ on: push
 
 jobs:
   setup:
-    runs-on: [ windows-latest, ubuntu-latest, macos-latest ]
+    runs-on: [ windows-latest, ubuntu-latest ]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -54,7 +54,7 @@ jobs:
         run: uv run pyright .
 
   build:
-    runs-on: [ windows-latest, ubuntu-latest, macos-latest ]
+    runs-on: [ windows-latest, ubuntu-latest ]
     needs: [setup, linting, formatting, type-check]
     steps:
       - name: Checkout code
