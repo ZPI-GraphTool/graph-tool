@@ -1,4 +1,3 @@
-# Load data and compute static values
 from shiny import App
 
 from .server import server
