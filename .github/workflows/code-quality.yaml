@@ -4,17 +4,20 @@ jobs:
   linting:
     runs-on: ubuntu-latest
     steps:
-      - uses: ./.github/actions/setup/action.yaml
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
       - run: uvx ruff check .
 
   formatting:
     runs-on: ubuntu-latest
     steps:
-      - uses: ./.github/actions/setup/action.yaml
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
       - run: uvx ruff format --check .
 
   type_check:
     runs-on: ubuntu-latest
     steps:
-      - uses: ./.github/actions/setup/action.yaml
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
       - run: uv run pyright .

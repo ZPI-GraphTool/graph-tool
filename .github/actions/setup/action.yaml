@@ -9,5 +9,3 @@ runs:
         version: "latest"
 
     - run: uv sync
-
-    - uses: actions/checkout@v4
