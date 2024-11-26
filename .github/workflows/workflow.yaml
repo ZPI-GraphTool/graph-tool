@@ -7,19 +7,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v3
-        with:
-          version: "latest"
+      - name: Setup uv
+        uses: ./.github/actions/setup
 
       - name: Sync dependencies
         run: uv sync
-
-      - name: Cache virtual environment
-        uses: actions/cache@v3
-        with:
-          key: ${{ runner.os }}-uv-venv
-          path: ~/.venv
 
   linting:
     runs-on: ubuntu-latest
@@ -28,11 +20,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Restore virtual environment
-        uses: actions/cache@v3
-        with:
-          key: ${{ runner.os }}-uv-venv
-          path: ~/.venv
+      - name: Setup uv
+        uses: ./.github/actions/setup
 
       - run: uvx ruff check .
 
@@ -43,11 +32,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Restore virtual environment
-        uses: actions/cache@v3
-        with:
-          key: ${{ runner.os }}-uv-venv
-          path: ~/.venv
+      - name: Setup uv
+        uses: ./.github/actions/setup
 
       - run: uvx ruff format --check .
 
@@ -58,11 +44,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Restore virtual environment
-        uses: actions/cache@v3
-        with:
-          key: ${{ runner.os }}-uv-venv
-          path: ~/.venv
+      - name: Setup uv
+        uses: ./.github/actions/setup
 
       - run: uv run pyright .
 
@@ -73,11 +56,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Restore virtual environment
-        uses: actions/cache@v3
-        with:
-          key: ${{ runner.os }}-uv-venv
-          path: ~/.venv
+      - name: Setup uv
+        uses: ./.github/actions/setup
 
-      - run: uv run pyinstaller ./NetworkStreamTool.spec
-      - run: cp -r ./.to_add_to_internal/* ./dist/NetworkStreamTool/_internal/
+      - run: |
+          uv run pyinstaller ./NetworkStreamTool.spec
+          cp -r ./.to_add_to_internal/* ./dist/NetworkStreamTool/_internal/
