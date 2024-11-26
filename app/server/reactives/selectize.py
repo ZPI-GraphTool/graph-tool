@@ -38,14 +38,14 @@ def get_class_name_from(file_path: Path) -> str | None:
             return name_local
 
 
-def get_algorithm_names(type: AlgorithmType) -> dict[str, str]:
-    algorithm_names: dict[str, str] = {}
+def get_algorithms(type: AlgorithmType) -> dict[str, str]:
+    algorithms: dict[str, str] = {}
     algorithms_type_directory = ALGORITHMS_DIRECTORY / type
     for algorithm_file in algorithms_type_directory.glob("*.py"):
         algorithm_name = get_class_name_from(algorithm_file)
         if algorithm_name is not None:
-            algorithm_names.update({str(algorithm_file): algorithm_name})
-    return algorithm_names
+            algorithms.update({str(algorithm_file): algorithm_name})
+    return algorithms
 
 
 def server_selectize(input: Inputs) -> None:
@@ -58,7 +58,7 @@ def server_selectize(input: Inputs) -> None:
                 "",
                 {
                     "": {"New": "New function"},
-                    "Existing": get_algorithm_names(AlgorithmType.PREPROCESSING),
+                    "Existing": get_algorithms(AlgorithmType.PREPROCESSING),
                 },
                 selected="New",
             ),
@@ -73,7 +73,7 @@ def server_selectize(input: Inputs) -> None:
                 "",
                 {
                     "": {"New": "New algorithm"},
-                    "Existing": get_algorithm_names(AlgorithmType.STREAMING),
+                    "Existing": get_algorithms(AlgorithmType.STREAMING),
                     "Presupplied": {
                         str(
                             DEGREE_CENTRALITY_STREAM_ALGORITHM_FILE
@@ -93,7 +93,7 @@ def server_selectize(input: Inputs) -> None:
                 "",
                 {
                     "": {"New": "New algorithm"},
-                    "Existing": get_algorithm_names(AlgorithmType.BATCH),
+                    "Existing": get_algorithms(AlgorithmType.BATCH),
                     "Presupplied": {
                         str(
                             DEGREE_CENTRALITY_BATCH_ALGORITHM_FILE

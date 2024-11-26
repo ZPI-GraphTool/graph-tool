@@ -11,7 +11,7 @@ PlotList = list[tuple[str, Figure]]
 
 
 def dedent(message: str) -> str:
-    content: str = "# Results\n\n"
+    content = ""
     for line in message.splitlines():
         content += line.lstrip() + "\n"
     return content
@@ -34,8 +34,10 @@ def write_plot_images(plots: PlotList, results_directory: Path) -> str:
         images_directory = results_directory / "images"
         images_directory.mkdir(exist_ok=True)
         image_file = f"{name}.svg"
+        name_formatted = name.replace("_", " ").capitalize()
         plot.write_image(images_directory / image_file)
-        results += f"\n![{name}](images/{image_file})\n"
+        results += f"\n## {name_formatted}  \n"
+        results += f"\n![{name}](images/{image_file})  \n"
     return results
 
 

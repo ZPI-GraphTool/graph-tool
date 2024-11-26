@@ -74,6 +74,10 @@ def server_run_experiment(
             errors.set(missing_path_error)
         except TypeError as type_error:
             errors.set(type_error)
+        except AttributeError:
+            errors.set(
+                "No implementation was selected for one of the functions/algorithms."
+            )
         except UnicodeDecodeError:
             errors.set(
                 "The dataset you provided is not in a UTF-8-compatible encoding."
