@@ -12,6 +12,7 @@ jobs:
 
       - name: Sync dependencies
         run: uv sync
+        if: steps.setup-uv.outputs.cache-hit == 'false'
 
   linting:
     runs-on: ubuntu-latest
@@ -72,10 +73,10 @@ jobs:
         run: cp -r ./algorithms ./demos ./experiments ./dist/NetworkStreamTool/
 
       - name: Archive build
-        run: tar -czf NetworkStreamTool-linux.tar.gz -C dist NetworkStreamTool
+        run: tar -czf NetworkStreamTool-linux.tar -C dist NetworkStreamTool
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: NetworkStreamTool-linux
-          path: NetworkStreamTool-linux.tar.gz
+          path: NetworkStreamTool-linux.tar
