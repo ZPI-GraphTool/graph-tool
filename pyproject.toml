@@ -25,4 +25,5 @@ dev = [
     "pandas-stubs>=2.2.3.241126",
     "pyinstaller>=6.11.1",
     "pyright[nodejs]>=1.1.389",
+    "ruff>=0.8.0",
 ]

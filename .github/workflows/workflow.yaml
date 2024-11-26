@@ -7,7 +7,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup uv
+      - name: Setup environment
         uses: ./.github/actions/setup
 
       - name: Sync dependencies
@@ -20,10 +20,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup uv
+      - name: Setup environment
         uses: ./.github/actions/setup
 
-      - run: uvx ruff check .
+      - name: Lint code
+        run: uvx ruff check .
 
   formatting:
     runs-on: ubuntu-latest
@@ -32,10 +33,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup uv
+      - name: Setup environment
         uses: ./.github/actions/setup
 
-      - run: uvx ruff format --check .
+      - name: Format code
+        run: uvx ruff format --check .
 
   type-check:
     runs-on: ubuntu-latest
@@ -44,10 +46,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup uv
+      - name: Setup environment
         uses: ./.github/actions/setup
 
-      - run: uv run pyright .
+      - name: Check types
+        run: uv run pyright .
 
   build:
     runs-on: ubuntu-latest
@@ -56,9 +59,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup uv
+      - name: Setup environment
         uses: ./.github/actions/setup
 
-      - run: |
-          uv run pyinstaller ./NetworkStreamTool.spec
-          cp -r ./.to_add_to_internal/* ./dist/NetworkStreamTool/_internal/
+      - name: Build executable
+        run: uv run pyinstaller ./NetworkStreamTool.spec
+
+      - name: Copy internal files
+        run: cp -r ./.to_add_to_internal/* ./dist/NetworkStreamTool/_internal/
