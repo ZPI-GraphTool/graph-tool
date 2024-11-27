@@ -32,33 +32,37 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: NetworkStreamTool-Windows
-          path: NetworkStreamTool-windows.zip
           repository: ${{ github.repository }}
           run-id: ${{ needs.get-latest-workflow-run-id.outputs.run-id }}
           github-token: ${{ github.token }}
 
-      - name: 📦 Publish artifact to release
-        run: gh release upload ${{ github.event.release.tag_name }} NetworkStreamTool-windows.zip
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - run: ls -la
 
-  publish-linux:
-    runs-on: ubuntu-latest
-    needs: get-latest-workflow-run-id
-    steps:
-      - name: 📄 Checkout code
-        uses: actions/checkout@v4
+  #     - name: 📦 Publish artifact to release
+  #       run: |
+  #         mv NetworkStreamTool-Windows NetworkStreamTool-windows.zip
+  #         gh release upload ${{ github.event.release.tag_name }} NetworkStreamTool-windows.zip
+  #       env:
+  #         GH_TOKEN: ${{ github.token }}
 
-      - name: ⬇️ Download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: NetworkStreamTool-Linux
-          path: NetworkStreamTool-linux.zip
-          repository: ${{ github.repository }}
-          run-id: ${{ needs.get-latest-workflow-run-id.outputs.run-id }}
-          github-token: ${{ github.token }}
+  # publish-linux:
+  #   runs-on: ubuntu-latest
+  #   needs: get-latest-workflow-run-id
+  #   steps:
+  #     - name: 📄 Checkout code
+  #       uses: actions/checkout@v4
 
-      - name: 📦 Publish artifact to release
-        run: gh release upload ${{ github.event.release.tag_name }} NetworkStreamTool-linux.zip
-        env:
-          GH_TOKEN: ${{ github.token }}
+  #     - name: ⬇️ Download artifact
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: NetworkStreamTool-Linux
+  #         repository: ${{ github.repository }}
+  #         run-id: ${{ needs.get-latest-workflow-run-id.outputs.run-id }}
+  #         github-token: ${{ github.token }}
+
+  #     - name: 📦 Publish artifact to release
+  #       run: |
+  #         mv NetworkStreamTool-Linux NetworkStreamTool-linux.zip
+  #         gh release upload ${{ github.event.release.tag_name }} NetworkStreamTool-linux.zip
+  #       env:
+  #         GH_TOKEN: ${{ github.token }}
