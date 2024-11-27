@@ -85,7 +85,7 @@ jobs:
         run: cp -r ./algorithms ./demos ./experiments ./dist/NetworkStreamTool/
         shell: bash
 
-      - name: ⬆️ Upload build artifact
+      - name: 📤 Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: NetworkStreamTool-${{ runner.os }}

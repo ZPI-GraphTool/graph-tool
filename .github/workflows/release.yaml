@@ -12,7 +12,7 @@ jobs:
     outputs:
       run-id: ${{ steps.get-latest-workflow-run-id.outputs.run-id }}
     steps:
-      - name: Get id of latest workflow run
+      - name: 🆔 Get id of latest workflow run
         id: get-latest-workflow-run-id
         run: |
           OTHER_REPOSITORY="${{ github.repository }}"
@@ -30,7 +30,7 @@ jobs:
       - name: 📄 Checkout code
         uses: actions/checkout@v4
 
-      - name: ⬇️ Download artifact
+      - name: 📥 Download artifact
         uses: actions/download-artifact@v4
         with:
           name: NetworkStreamTool-Windows
@@ -39,10 +39,10 @@ jobs:
           run-id: ${{ needs.get-latest-workflow-run-id.outputs.run-id }}
           github-token: ${{ github.token }}
 
-      - name: Archive artifact
-        run: zip -r NetworkStreamTool-windows.zip artifact
+      - name: 📦 Archive artifact
+        run: zip -r NetworkStreamTool-windows.zip artifact/*
 
-      - name: 📦 Publish artifact to release
+      - name: 🚀 Publish to release
         run: gh release upload ${{ github.event.release.tag_name }} NetworkStreamTool-windows.zip
         env:
           GH_TOKEN: ${{ github.token }}
@@ -54,7 +54,7 @@ jobs:
       - name: 📄 Checkout code
         uses: actions/checkout@v4
 
-      - name: ⬇️ Download artifact
+      - name: 📥 Download artifact
         uses: actions/download-artifact@v4
         with:
           name: NetworkStreamTool-Linux
@@ -63,10 +63,10 @@ jobs:
           run-id: ${{ needs.get-latest-workflow-run-id.outputs.run-id }}
           github-token: ${{ github.token }}
 
-      - name: Archive artifact
-        run: zip -r NetworkStreamTool-linux.zip artifact
+      - name: 📦 Archive artifact
+        run: zip -r NetworkStreamTool-linux.zip artifact/*
 
-      - name: 📦 Publish artifact to release
+      - name: 🚀 Publish to release
         run: gh release upload ${{ github.event.release.tag_name }} NetworkStreamTool-linux.zip
         env:
           GH_TOKEN: ${{ github.token }}
