@@ -7,14 +7,17 @@ on:
 jobs:
   get-latest-workflow-run-id:
     runs-on: ubuntu-latest
+    outputs:
+      run-id: ${{ steps.get-latest-workflow-run-id.outputs.run-id }}
     steps:
       - name: Get id of latest workflow run
+        id: get-latest-workflow-run-id
         run: |
           OTHER_REPOSITORY="${{ github.repository }}"
           WORKFLOW_NAME="Build artifacts"
-          RUN_ID=`gh run --repo ${OTHER_REPOSITORY} list --workflow "${WORKFLOW_NAME}" --json databaseId --jq .[0].databaseId`
-          echo "Detected latest run id of ${RUN_ID} for workflow ${WORKFLOW_NAME}"
-          echo "run-id=${RUN_ID}" >> "$GITHUB_OUTPUT"
+          RUN_ID=`gh run --repo "${OTHER_REPOSITORY}" list --workflow "${WORKFLOW_NAME}" --json databaseId --jq .[0].databaseId`
+          echo "Detected latest run id ${RUN_ID} of workflow ${WORKFLOW_NAME}"
+          echo "run-id=${RUN_ID}" >> $GITHUB_OUTPUT
         env:
           GH_TOKEN: ${{ github.token }}
 
@@ -25,7 +28,7 @@ jobs:
       - name: 📄 Checkout code
         uses: actions/checkout@v4
 
-      - name: ⏬ Download artifact
+      - name: ⬇️ Download artifact
         uses: actions/download-artifact@v4
         with:
           name: NetworkStreamTool-Windows
