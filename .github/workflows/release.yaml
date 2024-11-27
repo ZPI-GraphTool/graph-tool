@@ -33,9 +33,9 @@ jobs:
         with:
           name: NetworkStreamTool-Windows
           path: NetworkStreamTool-windows.zip
-          github-token: ${{ github.token }}
           repository: ${{ github.repository }}
           run-id: ${{ needs.get-latest-workflow-run-id.outputs.run-id }}
+          github-token: ${{ github.token }}
 
       - name: 📦 Publish artifact to release
         run: gh release upload ${{ github.event.release.tag_name }} NetworkStreamTool-windows.zip
@@ -54,9 +54,9 @@ jobs:
         with:
           name: NetworkStreamTool-Linux
           path: NetworkStreamTool-linux.zip
-          github-token: ${{ github.token }}
           repository: ${{ github.repository }}
           run-id: ${{ needs.get-latest-workflow-run-id.outputs.run-id }}
+          github-token: ${{ github.token }}
 
       - name: 📦 Publish artifact to release
         run: gh release upload ${{ github.event.release.tag_name }} NetworkStreamTool-linux.zip
