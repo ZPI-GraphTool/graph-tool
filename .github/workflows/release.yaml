@@ -12,7 +12,7 @@ jobs:
         run: |
           OTHER_REPOSITORY="${{ github.repository }}"
           WORKFLOW_NAME="Build artifacts"
-          RUN_ID=`gh run --repo ${OTHER_REPOSITORY} list --workflow ${WORKFLOW_NAME} --json databaseId --jq .[0].databaseId`
+          RUN_ID=`gh run --repo ${OTHER_REPOSITORY} list --workflow "${WORKFLOW_NAME}" --json databaseId --jq .[0].databaseId`
           echo "Detected latest run id of ${RUN_ID} for workflow ${WORKFLOW_NAME}"
           echo "run-id=${RUN_ID}" >> "$GITHUB_OUTPUT"
         env:
