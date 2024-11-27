@@ -40,7 +40,10 @@ jobs:
           github-token: ${{ github.token }}
 
       - name: 📦 Archive artifact
-        run: zip -r NetworkStreamTool-windows.zip artifact/*
+        run: |
+          cd artifact
+          zip -r ../NetworkStreamTool-windows.zip *
+          cd ..
 
       - name: 🚀 Publish to release
         run: gh release upload ${{ github.event.release.tag_name }} NetworkStreamTool-windows.zip
@@ -64,7 +67,10 @@ jobs:
           github-token: ${{ github.token }}
 
       - name: 📦 Archive artifact
-        run: zip -r NetworkStreamTool-linux.zip artifact/*
+        run: |
+          cd artifact
+          zip -r ../NetworkStreamTool-linux.zip *
+          cd ..
 
       - name: 🚀 Publish to release
         run: gh release upload ${{ github.event.release.tag_name }} NetworkStreamTool-linux.zip
