@@ -37,10 +37,11 @@ jobs:
           run-id: ${{ needs.get-latest-workflow-run-id.outputs.run-id }}
           github-token: ${{ github.token }}
 
+      - name: Archive artifact
+        run: zip -r NetworkStreamTool-windows.zip artifact
+
       - name: 📦 Publish artifact to release
-        run: |
-          zip -r NetworkStreamTool-windows.zip artifact
-          gh release upload ${{ github.event.release.tag_name }} NetworkStreamTool-windows.zip
+        run: gh release upload ${{ github.event.release.tag_name }} NetworkStreamTool-windows.zip
         env:
           GH_TOKEN: ${{ github.token }}
 
@@ -60,9 +61,10 @@ jobs:
           run-id: ${{ needs.get-latest-workflow-run-id.outputs.run-id }}
           github-token: ${{ github.token }}
 
+      - name: Archive artifact
+        run: zip -r NetworkStreamTool-linux.zip artifact
+
       - name: 📦 Publish artifact to release
-        run: |
-          zip -r NetworkStreamTool-linux.zip artifact
-          gh release upload ${{ github.event.release.tag_name }} NetworkStreamTool-linux.zip
+        run: gh release upload ${{ github.event.release.tag_name }} NetworkStreamTool-linux.zip
         env:
           GH_TOKEN: ${{ github.token }}
