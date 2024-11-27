@@ -11,52 +11,52 @@ jobs:
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - name: Checkout code
+      - name: 📄 Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup environment
+      - name: ⚙️ Setup environment
         uses: ./.github/actions/setup
 
-      - name: Sync dependencies
+      - name: 🔄 Sync dependencies
         run: uv sync --frozen
 
   linting:
     runs-on: ubuntu-latest
     needs: setup
     steps:
-      - name: Checkout code
+      - name: 📄 Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup environment
+      - name: ⚙️ Setup environment
         uses: ./.github/actions/setup
 
-      - name: Lint code
+      - name: 🔎 Lint code
         run: uvx ruff check .
 
   formatting:
     runs-on: ubuntu-latest
     needs: setup
     steps:
-      - name: Checkout code
+      - name: 📄 Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup environment
+      - name: ⚙️ Setup environment
         uses: ./.github/actions/setup
 
-      - name: Format code
+      - name: 📝 Format code
         run: uvx ruff format --check .
 
   type-check:
     runs-on: ubuntu-latest
     needs: setup
     steps:
-      - name: Checkout code
+      - name: 📄 Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup environment
+      - name: ⚙️ Setup environment
         uses: ./.github/actions/setup
 
-      - name: Check types
+      - name: 👀 Check types
         run: uv run pyright .
 
   build:
@@ -66,27 +66,24 @@ jobs:
     runs-on: ${{ matrix.os }}
     needs: [setup, linting, formatting, type-check]
     steps:
-      - name: Checkout code
+      - name: 📄 Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup environment
+      - name: ⚙️ Setup environment
         uses: ./.github/actions/setup
 
-      - name: Build executable
+      - name: 🔨 Build executable
         run: uv run pyinstaller ./NetworkStreamTool.spec
 
-      - name: Copy internal files
+      - name: 🔗 Copy internal files
         run: cp -r ./.to_add_to_internal/* ./dist/NetworkStreamTool/_internal/
         shell: bash
 
-      - name: Copy algorithms, demos and experiments directories
+      - name: 🔗 Copy algorithms, demos and experiments directories
         run: cp -r ./algorithms ./demos ./experiments ./dist/NetworkStreamTool/
         shell: bash
 
-      # - name: Archive build
-      #   run: tar -czf NetworkStreamTool-${{ runner.os }}.tar.gz -C dist NetworkStreamTool
-
-      - name: Upload build artifact
+      - name: ⏫ Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: NetworkStreamTool-${{ runner.os }}
