@@ -20,7 +20,7 @@ jobs:
 
   publish-windows:
     runs-on: ubuntu-latest
-    needs: run-id
+    needs: get-latest-workflow-run-id
     steps:
       - name: 📄 Checkout code
         uses: actions/checkout@v4
@@ -39,7 +39,7 @@ jobs:
 
   publish-linux:
     runs-on: ubuntu-latest
-    needs: run-id
+    needs: get-latest-workflow-run-id
     steps:
       - name: 📄 Checkout code
         uses: actions/checkout@v4
