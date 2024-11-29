@@ -1,17 +1,31 @@
-import csv
 import importlib.util
 import inspect
 import os
 import sys
 import time
 from pathlib import Path
+from typing import Any
+
 from pympler.asizeof import asizeof
-from .interfaces import StreamingAlgorithm, BatchAlgorithm, PreprocessEdge
-from .file_reading import CSVFile, MTXFile, FileProcessingStrategy, TEXTFile
-import pandas as pd
+
+from algorithms._config.interfaces import (
+    BatchAlgorithm,
+    PreprocessEdge,
+    StreamingAlgorithm,
+)
+from app.server._config import (
+    CONNECTION_PREPROCESSING_FUNCTION_FILE,
+    CONNECTIONS_CSV_FILE,
+)
+
+from .file_reading import CSVFile, MTXFile, TEXTFile
+
+ResultList = list[tuple[Any, int | float]]
 
 
-def get_class_instance_from(file_path: Path) -> object:
+def get_class_instance_from(
+    file_path: Path,
+) -> BatchAlgorithm | PreprocessEdge | StreamingAlgorithm | None:
     module_name = os.path.basename(file_path)
 
     spec = importlib.util.spec_from_file_location(str(file_path), file_path)
@@ -20,183 +34,207 @@ def get_class_instance_from(file_path: Path) -> object:
     spec.loader.exec_module(module)  # type: ignore
 
     for name_local in dir(module):
-        if not inspect.isclass(getattr(module, name_local)):
+        mysterious_thing = getattr(module, name_local)
+        if not inspect.isclass(mysterious_thing):
             continue
-        MysteriousClass = getattr(module, name_local)
-        if not inspect.isabstract(MysteriousClass):
+        MysteriousClass = mysterious_thing
+        if not inspect.isabstract(MysteriousClass) and issubclass(
+            MysteriousClass, (BatchAlgorithm, PreprocessEdge, StreamingAlgorithm)
+        ):
             return MysteriousClass()
 
+
+def get_sampling_interval(total_count: int, sample_count: int) -> int:
+    return total_count // sample_count
 
 
 class Runner:
     def __init__(
         self,
         dataset_path: Path,
-        preprocess_path: Path | None,
+        preprocessing_path: Path | None,
         streaming_path: Path,
         batch_path: Path | None,
     ):
         self._dataset = dataset_path
-        self._should_preprocess = preprocess_path is not None
+        if self._dataset == CONNECTIONS_CSV_FILE and preprocessing_path is None:
+            preprocessing_path = CONNECTION_PREPROCESSING_FUNCTION_FILE
+        self._with_preprocessing = preprocessing_path is not None
         self._with_batch = batch_path is not None
-        
+
         file_extension = self._dataset.suffix
 
-        if file_extension =='.csv':
-            self._file_reading: FileProcessingStrategy = CSVFile(self._dataset)
-        elif file_extension == '.mtx':
-            self._file_reading: FileProcessingStrategy = MTXFile(self._dataset)
+        if file_extension == ".csv":
+            self._file_reading = CSVFile(self._dataset)
+        elif file_extension == ".mtx":
+            self._file_reading = MTXFile(self._dataset)
         else:
-            # dont ask 
-            if self._should_preprocess:
-                self._file_reading :FileProcessingStrategy = TEXTFile(self._dataset, self._preprocess.create_edge_from) # type:ignore
+            # dont ask
+            if self._with_preprocessing:
+                self._file_reading = TEXTFile(
+                    self._dataset, self._preprocessing.create_edge_from
+                )
             else:
-                self._file_reading :FileProcessingStrategy = TEXTFile(self._dataset)
-        
-        # time inverals are now saved using the perf_counter_ns for greater precision 
+                self._file_reading = TEXTFile(self._dataset)
+
+        # time inverals are now saved using the perf_counter_ns for greater precision
         self._calculation_time_per_edge = []
         self._preprocessing_time_per_edge = []
-                
-        # Saves the amount of stored memory in RAM (non-swapped) in MB by this runner process 
+
+        with open(self._dataset, encoding="utf-8") as file:
+            reader: Any = self._file_reading.get_reader(file)
+            self._file_reading.set_headers(reader)
+            self._row_count = sum(1 for _ in reader)
+
+        # Saves the amount of stored memory in RAM (non-swapped) in MB by this runner process
         # psutil implementation - will include everything including the sizes of the history and of the stream, batch object
-        # stops recording when the streaming algorithm is done computing 
+        # stops recording when the streaming algorithm is done computing
         # pympler implementation - is restricted to the object itself, is an approximation of its size
-        self._memory_history = []
-        self._number_of_processed_edges = 0
-            
-        self._streaming = get_class_instance_from(streaming_path)
-        
-        if self._should_preprocess:
-            self._preprocess = get_class_instance_from(preprocess_path)  # type: ignore
-            
+        self._memory_usage = []
+        self._processed_edge_count = 0
+
+        if self._with_preprocessing:
+            self._preprocessing: PreprocessEdge = get_class_instance_from(
+                preprocessing_path  # type: ignore
+            )
+
+        self._streaming: StreamingAlgorithm = get_class_instance_from(streaming_path)  # type: ignore
+
         if self._with_batch:
-            self._batch = get_class_instance_from(batch_path)  # type: ignore
+            self._batch: BatchAlgorithm = get_class_instance_from(batch_path)  # type: ignore
 
-
-    # getters for metrics and results - 
+    # getters for metrics and results -
     # some of them are optional (like results from batch) => changed method tuple return to getters
     @property
-    def calculation_time_per_edge(self):
+    def edge_count(self) -> int:
+        return self._row_count
+
+    @property
+    def dataset_size(self) -> int:
+        return self._dataset.stat().st_size
+
+    @property
+    def calculation_time_per_edge(self) -> list[int]:
         return self._calculation_time_per_edge
-    
+
     @property
-    def preprocessing_time_per_edge(self):
+    def preprocessing_time_per_edge(self) -> list[int]:
         return self._preprocessing_time_per_edge
-    
+
     @property
-    def memory_history(self):
-        return self._memory_history
-    
+    def memory_usage(self) -> list[int]:
+        return self._memory_usage
 
     def validate_algorithm_signatures(self, row_data) -> tuple[bool, str]:
-        stream_sig = inspect.signature(self._streaming.on_edge_calculate).parameters["edge"].annotation # type: ignore
-        are_params_correct = type(row_data) == stream_sig
-        message = ''
+        stream_signature = (
+            inspect.signature(self._streaming.on_edge_calculate)
+            .parameters["edge"]
+            .annotation
+        )
+        are_params_correct = type(row_data) is stream_signature
+        message = ""
         if not are_params_correct:
-            message += f"The given row data type: {type(row_data)} does not match the edge parameter {stream_sig} in the provided streaming algorithm.\n"
+            message += f"The given row data type: {type(row_data)} does not match the edge parameter {stream_signature} in the provided streaming algorithm.\n"
 
-        if self._should_preprocess:
-            preprocess_sig = inspect.signature(self._preprocess.create_edge_from).parameters['line'].annotation # type: ignore
-            are_params_correct = are_params_correct or type(row_data)==preprocess_sig
-            message += f"The given row data type: {type(row_data)} does not match the line parameter {preprocess_sig} in the provided preprocessing.\n"
-        
+        if self._with_preprocessing:
+            preprocessing_signature = (
+                inspect.signature(self._preprocessing.create_edge_from)
+                .parameters["line"]
+                .annotation
+            )
+            are_params_correct = (
+                are_params_correct or type(row_data) is preprocessing_signature
+            )
+            message += f"The given row data type: {type(row_data)} does not match the line parameter {preprocessing_signature} in the provided preprocessing.\n"
+
         return are_params_correct, message
-        
-    
-    def get_stream_results(self):
-        return self._streaming.submit_results() # type: ignore
-    
-    def get_batch_results(self):
-        return self._batch.submit_results() # type: ignore
-   
 
-    def get_jaccard_similarity(self):
-        set_a = set(self.get_stream_results())
-        set_b = set(self.get_batch_results())
+    def get_stream_results(self) -> ResultList:
+        return self._streaming.submit_results()
 
-        intersec = set_a.intersection(set_b)
+    def get_batch_results(self) -> ResultList:
+        return self._batch.submit_results() if self._with_batch else []
+
+    def get_parameterized_results(
+        self, orderDescending: bool, cardinality: int
+    ) -> tuple[ResultList, ResultList]:
+        streaming_results = sorted(self.get_stream_results(), reverse=orderDescending)
+        batch_results = sorted(self.get_batch_results(), reverse=orderDescending)
+        return streaming_results[:cardinality], batch_results[:cardinality]
+
+    def get_jaccard_similarity(
+        self, orderDescending: bool, cardinality: int = 10
+    ) -> float:
+        streaming_results, batch_results = self.get_parameterized_results(
+            orderDescending, cardinality
+        )
+        set_a = set(streaming_results)
+        set_b = set(batch_results)
+
+        intersection = set_a.intersection(set_b)
         union = set_a.union(set_b)
-        return float(len(intersec))/float(len(union))
-    
-    
+        return float(len(intersection)) / float(len(union))
 
-    def get_streaming_accuracy(self):
-        streaming_results = self._streaming.submit_results() # type: ignore
-        batch_results = self._batch.submit_results() # type: ignore
+    def get_streaming_accuracy(
+        self, orderDescending: bool = False, cardinality: int = 10
+    ) -> float:
+        streaming_results, batch_results = self.get_parameterized_results(
+            orderDescending, cardinality
+        )
         correct = 0
         for stream, batch in zip(streaming_results, batch_results):
             if stream[0] == batch[0]:
-                correct +=1
+                correct += 1
 
-        return correct/len(streaming_results)
+        return correct / len(streaming_results)
 
+    def validate_implementation(self) -> None:
+        if not isinstance(self._streaming, StreamingAlgorithm):
+            raise TypeError(
+                "Streaming algorithm is not implemeted right - cannot instantiate StreamingAlgorithm interface. Check if all methods have been supplied together with the right method name."
+            )
+        elif self._with_batch and (not isinstance(self._batch, BatchAlgorithm)):
+            raise TypeError(
+                "Batch algorithm is not implemeted right - cannot instantiate BatchAlgorithm interface. Check if all methods have been supplied together with the right method name."
+            )
+        elif self._with_preprocessing and (
+            not isinstance(self._preprocessing, PreprocessEdge)
+        ):
+            raise TypeError(
+                "Preprocessing algorithm is not implemeted right - cannot instantiate PreprocessEdge interface. Check if all methods have been supplied together with the right method name."
+            )
 
-    def validate_implementation(self):
-        if not isinstance(self._streaming, StreamingAlgorithm): # type: ignore
-            raise TypeError("Streaming algorithm is not implemeted right - cannot instantiate StreamingAlgorithm interface. Check if all methods have been supplied together with the right method name.")
-        elif self._with_batch and ( not isinstance(self._batch, BatchAlgorithm)): # type:ignore
-            raise TypeError("Batch algorithm is not implemeted right - cannot instantiate BatchAlgorithm interface. Check if all methods have been supplied together with the right method name.")
-        elif self._should_preprocess and (not isinstance(self._preprocess, PreprocessEdge)): # type:ignore
-            raise TypeError("Preprocessing algorithm is not implemeted right - cannot instantiate PreprocessEdge interface. Check if all methods have been supplied together with the right method name.")
-
-    def run(self):
+    def run_experiment(self, sample_count: int = 100) -> None:
+        sampling_interval = get_sampling_interval(self._row_count, sample_count)
         # process = psutil.Process(os.getpid())
-        
 
-        # MB_ratio = 1/(1024*1024) 
-        # self._memory_history.append([process.memory_info().rss*MB_ratio])
-        self._memory_history.append(asizeof(self._streaming))
+        # MB_ratio = 1/(1024*1024)
+        # self._memory_usage.append([process.memory_info().rss*MB_ratio])
 
+        with open(self._dataset, encoding="utf-8") as file:
+            reader = self._file_reading.get_reader(file)
 
-        with open(self._dataset, encoding = 'utf-8') as file:
-            reader = self._file_reading.get_reader(file) # type: ignore
-            self._file_reading.set_headers(reader)
+            for row in reader:  # type: ignore
+                row: Any = self._file_reading.process_row(row)
 
+                if self._with_preprocessing:
+                    preprocessing_start = time.perf_counter_ns()
+                    row = self._preprocessing.create_edge_from(row)
+                    preprocessing_end = time.perf_counter_ns()
+                    preprocessing_duration = preprocessing_end - preprocessing_start
+                    self._preprocessing_time_per_edge.append(preprocessing_duration)
 
-            for row in reader: # type: ignore
-                self._number_of_processed_edges += 1
-
-                row = self._file_reading.process_row(row)
-
-                if self._should_preprocess:
-                    preprocess_start = time.perf_counter()
-                   
-                    preprocess_end = time.perf_counter()
-                    preprocess_start = time.perf_counter_ns()
-                    row = self._preprocess.create_edge_from(row) # type: ignore
-                    preprocess_end = time.perf_counter_ns()
-                    preprocess_duration = preprocess_end - preprocess_start
-                    self._preprocessing_time_per_edge.append(
-                        preprocess_duration
-                    )
-
-                property_start = time.perf_counter()
-                self._streaming.on_edge_calculate(row)  # type: ignore
-                property_end = time.perf_counter()
                 property_start = time.perf_counter_ns()
                 self._streaming.on_edge_calculate(row)  # type: ignore
                 property_end = time.perf_counter_ns()
+                calculation_duration = property_end - property_start
+                self._calculation_time_per_edge.append(calculation_duration)
 
-
-                property_calculation_duration = property_end - property_start
-                self._calculation_time_per_edge.append(
-                    property_calculation_duration 
-                )
-
-                # self._memory_history.append(process.memory_info().rss*MB_ratio)
-                self._memory_history.append(asizeof(self._streaming))
-
+                if self._processed_edge_count % sampling_interval == 0:
+                    self._memory_usage.append(
+                        (self._processed_edge_count, asizeof(self._streaming))
+                    )
+                self._processed_edge_count += 1
 
             if self._with_batch:
-                self._batch.calculate_property(self._file_reading.get_dataframe()) # type: ignore
-                
-
-        streaming_results = self._streaming.submit_results()  # type: ignore
-        batch_results = self._batch.submit_results() if self._with_batch else None  # type: ignore
-
-        return (
-            streaming_results,
-            batch_results,
-            self._calculation_time_per_edge,
-            self._preprocessing_time_per_edge,
-        )
+                self._batch.calculate_property(self._file_reading.get_dataframe())  # type: ignore
