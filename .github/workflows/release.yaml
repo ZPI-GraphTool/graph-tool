@@ -8,6 +8,7 @@ on:
 
 jobs:
   get-latest-workflow-run-id:
+    name: 🆔 Get id of latest workflow run
     runs-on: ubuntu-latest
     outputs:
       run-id: ${{ steps.get-latest-workflow-run-id.outputs.run-id }}
@@ -24,6 +25,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
 
   publish-windows:
+    name: 🚀📦 Publish Windows package
     runs-on: ubuntu-latest
     needs: get-latest-workflow-run-id
     steps:
@@ -51,6 +53,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
 
   publish-linux:
+    name: 🚀📦 Publish Linux package
     runs-on: ubuntu-latest
     needs: get-latest-workflow-run-id
     steps:
