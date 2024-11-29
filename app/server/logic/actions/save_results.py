@@ -58,9 +58,7 @@ def save_results_to_markdown(**kwargs) -> None:
     """)
     if kwargs["batch_algorithm"]:
         results += dedent_to_zero(f"""\
-            * Sorting order: `{kwargs['order']}`
-            * Cardinality of node rank: `{kwargs['cardinality']}`
-            * Jaccard similarity: `{kwargs['jaccard_similarity']:.4g}`
+            * Jaccard similarity: `{kwargs['jaccard_similarity']:.4g}` (order: `{kwargs['order']}`, cardinality: `{kwargs['cardinality']}`)
             * Streaming accuracy: `{kwargs['streaming_accuracy']:.4g}`  \
         """)
     results += dedent_to_zero(f"""\
@@ -133,9 +131,7 @@ def save_results_to_latex(**kwargs) -> None:
     if kwargs["batch_algorithm"]:
         results += dedent_to_lowest(f"""\
             \\begin{{itemize}}
-                \\item Sorting order: \\texttt{{{kwargs['order']}}}
-                \\item Cardinality of node rank: \\texttt{{{kwargs['cardinality']}}}
-                \\item Jaccard similarity: \\texttt{{{kwargs['jaccard_similarity']:.4g}}}
+                \\item Jaccard similarity: \\texttt{{{kwargs['jaccard_similarity']:.4g}}} (order: \\texttt{{{kwargs['order']}}}, cardinality: \\texttt{{{kwargs['cardinality']}}})
                 \\item Streaming accuracy: \\texttt{{{kwargs['streaming_accuracy']:.4g}}}
             \\end{{itemize}}
         """)

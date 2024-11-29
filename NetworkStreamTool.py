@@ -9,6 +9,7 @@ from pystray import MenuItem as item
 
 from app import kill_python, shiny_app
 
+# STATIC_DIRECTORY = Path(__file__).parent / "_static"
 STATIC_DIRECTORY = Path(sys.executable).parent / "_static"
 
 
