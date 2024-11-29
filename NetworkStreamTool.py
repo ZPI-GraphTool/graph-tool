@@ -1,3 +1,4 @@
+import sys
 import webbrowser
 from pathlib import Path
 from threading import Thread
@@ -8,7 +9,7 @@ from pystray import MenuItem as item
 
 from app import kill_python, shiny_app
 
-STATIC_DIRECTORY = Path(__file__).parent / "_static"
+STATIC_DIRECTORY = Path(sys.executable).parent / "_static"
 
 
 def open_app_in_browser():
