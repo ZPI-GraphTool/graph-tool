@@ -71,7 +71,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
-    needs: [setup, linting, formatting, type-check]
+    needs: [setup, linting, formatting, type-checking]
     steps:
       - name: 📄 Checkout code
         uses: actions/checkout@v4
