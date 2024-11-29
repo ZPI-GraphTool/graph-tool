@@ -1,6 +1,6 @@
 from pathlib import Path
 
-UI_DIR = Path(__file__).resolve().parents[1]
-STATIC_DIR = UI_DIR / "_static"
+UI_DIRECTORY = Path(__file__).resolve().parents[1]
+STATIC_DIRECTORY = UI_DIRECTORY / "_static"
 
-STYLES_CSS_FILE = STATIC_DIR / "styles.css"
+STYLES_CSS_FILE = STATIC_DIRECTORY / "styles.css"

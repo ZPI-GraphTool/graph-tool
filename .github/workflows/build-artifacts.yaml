@@ -81,8 +81,8 @@ jobs:
         run: cp -r ./.to_add_to_internal/* ./dist/NetworkStreamTool/_internal/
         shell: bash
 
-      - name: 🔗 Copy algorithms, demos and experiments directories
-        run: cp -r ./algorithms ./demos ./experiments ./dist/NetworkStreamTool/
+      - name: 🔗 Copy static, algorithms, demos and experiments directories
+        run: cp -r ./_static ./algorithms ./demos ./experiments ./dist/NetworkStreamTool/
         shell: bash
 
       - name: 📤 Upload build artifact

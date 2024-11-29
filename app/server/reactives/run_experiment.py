@@ -54,7 +54,7 @@ def server_run_experiment(
         results["streaming_results"].set(runner.get_stream_results())
         results["batch_results"].set(runner.get_batch_results())
         results["calculation_time"].set(runner.calculation_time_per_edge)
-        results["memory_history"].set(runner.memory_history)
+        results["memory_usage"].set(runner.memory_usage)
 
     @reactive.effect
     @reactive.event(input.run_experiment)

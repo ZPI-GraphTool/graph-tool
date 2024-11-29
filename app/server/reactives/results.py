@@ -10,7 +10,10 @@ from plotly.graph_objs import Figure
 from shiny import Inputs, reactive, render, ui
 from shinywidgets import render_widget
 
-from app.server.logic.actions import save_results
+from app.server.logic.actions.save_results import (
+    save_results_to_latex,
+    save_results_to_markdown,
+)
 from app.server.logic.runner import Runner
 
 from .selectize import get_class_name_from
@@ -76,8 +79,8 @@ def server_results(input: Inputs, results: dict[str, reactive.Value]):
         )
 
     @reactive.calc
-    def get_memory_history_plot() -> Figure:
-        edge, memory = zip(*results["memory_history"].get())
+    def get_memory_usage_plot() -> Figure:
+        edge, memory = zip(*results["memory_usage"].get())
         df = pd.DataFrame({"edge": edge, "memory": memory})
         line_plot = px.line(
             df,
@@ -89,10 +92,10 @@ def server_results(input: Inputs, results: dict[str, reactive.Value]):
         return line_plot
 
     @render.ui
-    def memory_history_plot() -> Tag:
+    def memory_usage_plot() -> Tag:
         return ui.card(
-            ui.card_header("Memory history"),
-            render_widget(get_memory_history_plot),  # type: ignore
+            ui.card_header("Memory usage history"),
+            render_widget(get_memory_usage_plot),  # type: ignore
             full_screen=True,
         )
 
@@ -244,11 +247,11 @@ def server_results(input: Inputs, results: dict[str, reactive.Value]):
     def results_second_row() -> Tag:
         columns = (
             (
-                ui.output_ui("memory_history_plot"),
+                ui.output_ui("memory_usage_plot"),
                 ui.output_ui("calculation_time_plot"),
             )
             if input.with_batch()
-            else (ui.output_ui("metrics_no_batch"), ui.output_ui("memory_history_plot"))
+            else (ui.output_ui("metrics_no_batch"), ui.output_ui("memory_usage_plot"))
         )
         return ui.layout_columns(
             *columns,
@@ -258,61 +261,70 @@ def server_results(input: Inputs, results: dict[str, reactive.Value]):
 
     @render.ui
     @reactive.event(input.run_experiment)
-    def save_results_button() -> Tag:
-        return ui.input_task_button(
-            "save_results",
-            "Save results",
-            icon=fa.icon_svg("floppy-disk"),
-            label_busy="Saving...",
-            class_="btn-outline-success",
+    def save_results_button() -> tuple[Tag, Tag]:
+        return (
+            ui.input_radio_buttons(
+                "output_format",
+                "Output format",
+                ["LaTeX", "Markdown"],
+                selected="LaTeX",
+                inline=True,
+            ),
+            ui.input_task_button(
+                "save_results",
+                "Save results",
+                icon=fa.icon_svg("floppy-disk"),
+                label_busy="Saving...",
+                class_="btn-outline-success",
+            ),
         )
 
     @ui.bind_task_button(button_id="save_results")
     @reactive.extended_task
-    async def save_results_task(
-        experiment_name: str, results: str, plots: list
-    ) -> None:
-        save_results(experiment_name, results, plots)
+    async def save_results_task(output_format: str, **kwargs) -> None:
+        output_format = output_format.lower()
+        if output_format == "markdown":
+            save_results_to_markdown(**kwargs)
+        elif output_format == "latex":
+            save_results_to_latex(**kwargs)
+        else:
+            raise NotImplementedError(f"Output format {output_format} is not supported")
 
     @reactive.effect
     @reactive.event(input.save_results)
     def _() -> None:
-        results = "# Results  \n"
-        results += "  \n"
-        results += "## Metadata  \n"
-        results += f"Experiment name: `{input.experiment_name()}`  \n"
+        (
+            preprocessing_function,
+            batch_algorithm,
+            jaccard_similarity,
+            streaming_accuracy,
+            order,
+            cardinality,
+            batch_node_rank,
+        ) = None, None, None, None, None, None, None
         if input.with_preprocessing() and input.select_preprocessing() != "New":
-            results += f"Used preprocessing function: `{input.select_preprocessing()}`  \n"  # fmt: skip
-        results += f"Used streaming algorithm: `{get_class_name_from(input.select_streaming())}`  \n"
+            preprocessing_function = input.select_preprocessing()
         if input.with_batch():
-            results += f"Used batch algorithm: `{get_class_name_from(input.select_batch())}`  \n"
-        results += "  \n"
-        results += "## Properties and metrics\n"
-        results += f"Total edge count: `{get_total_edge_count()}`  \n"
-        results += f"Size of dataset: `{get_dataset_size()}`  \n"
-        results += "  \n"
-        if input.with_batch():
+            batch_algorithm = get_class_name_from(input.select_batch())
             jaccard_similarity, streaming_accuracy, order, cardinality = (
                 get_comparison_metrics()
             )
-            results += f"Sorting order: `{order}`  \n"
-            results += f"Cardinality of node rank: `{cardinality}`  \n"
-            results += f"Jaccard similarity: `{jaccard_similarity:.4g}`  \n"
-            results += f"Streaming accuracy: `{streaming_accuracy:.4g}`  \n"
-            results += "  \n"
+            batch_node_rank = get_batch_node_rank()
 
-        results += (
-            f"## Streaming node rank  \n{get_streaming_node_rank().to_markdown()}  \n"
+        save_results_task(
+            output_format=input.output_format(),
+            experiment_name=input.experiment_name(),
+            preprocessing_function=preprocessing_function,
+            streaming_algorithm=get_class_name_from(input.select_streaming()),
+            batch_algorithm=batch_algorithm,
+            total_edge_count=get_total_edge_count(),
+            dataset_size=get_dataset_size(),
+            order=order,
+            cardinality=cardinality,
+            jaccard_similarity=jaccard_similarity,
+            streaming_accuracy=streaming_accuracy,
+            streaming_node_rank=get_streaming_node_rank(),
+            batch_node_rank=batch_node_rank,
+            calculation_time=get_calculation_time_plot(),
+            memory_usage=get_memory_usage_plot(),
         )
-        if input.with_batch():
-            results += (
-                f"## Batch node rank  \n{get_batch_node_rank().to_markdown()}  \n"
-            )
-
-        calculation_time_plot = (
-            "calculation_time",
-            get_calculation_time_plot(),
-        )
-        memory_history_plot = ("memory_history", get_memory_history_plot())
-        plots = [calculation_time_plot, memory_history_plot]
-        save_results_task(input.experiment_name(), results, plots)

@@ -90,7 +90,7 @@ class Runner:
         # psutil implementation - will include everything including the sizes of the history and of the stream, batch object
         # stops recording when the streaming algorithm is done computing
         # pympler implementation - is restricted to the object itself, is an approximation of its size
-        self._memory_history = []
+        self._memory_usage = []
         self._processed_edge_count = 0
 
         if self._with_preprocessing:
@@ -122,8 +122,8 @@ class Runner:
         return self._preprocessing_time_per_edge
 
     @property
-    def memory_history(self) -> list[int]:
-        return self._memory_history
+    def memory_usage(self) -> list[int]:
+        return self._memory_usage
 
     def validate_algorithm_signatures(self, row_data) -> tuple[bool, str]:
         stream_signature = (
@@ -209,7 +209,7 @@ class Runner:
         # process = psutil.Process(os.getpid())
 
         # MB_ratio = 1/(1024*1024)
-        # self._memory_history.append([process.memory_info().rss*MB_ratio])
+        # self._memory_usage.append([process.memory_info().rss*MB_ratio])
 
         with open(self._dataset, encoding="utf-8") as file:
             reader = self._file_reading.get_reader(file)
@@ -231,7 +231,7 @@ class Runner:
                 self._calculation_time_per_edge.append(calculation_duration)
 
                 if self._processed_edge_count % sampling_interval == 0:
-                    self._memory_history.append(
+                    self._memory_usage.append(
                         (self._processed_edge_count, asizeof(self._streaming))
                     )
                 self._processed_edge_count += 1

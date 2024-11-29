@@ -18,6 +18,8 @@ dependencies = [
     "pympler>=1.1",
     "kaleido==0.1.0.post1 ; platform_system == 'Windows'",
     "kaleido==0.2.1 ; platform_system != 'Windows'",
+    "jinja2>=3.1.4",
+    "pystray>=0.19.5",
 ]
 
 [dependency-groups]

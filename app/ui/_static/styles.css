@@ -79,6 +79,14 @@ bslib-input-dark-mode {
   flex: 1;
 }
 
+#output_format {
+  margin-bottom: -0.75rem;
+}
+
+.control-label, .selectize-label {
+  font-weight: 500;
+}
+
 #run_experiment {
   margin-top: -1rem;
   margin-bottom: -0.25rem;
@@ -99,7 +107,7 @@ table {
 	color: var(--bs-card-cap-color);
 	background-color: var(--bs-card-cap-bg);
   font-size: 1rem;
-  font-weight: 400;
+  font-weight: 400 !important;
   line-height: 1.2;
 }
 
