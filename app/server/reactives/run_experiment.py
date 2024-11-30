@@ -47,14 +47,42 @@ def server_run_experiment(
     @ui.bind_task_button(button_id="run_experiment")
     @reactive.extended_task
     async def run_experiment(runner: Runner) -> None:
-        runner.validate_implementation()
-        runner.run_experiment()
+        try:
+            runner.validate_implementation()
+            runner.run_experiment()
+        except UnicodeDecodeError:
+            errors.set(
+                "The dataset you provided is not in a UTF-8-compatible encoding."
+            )
+        except TypeError as type_error:
+            errors.set(type_error)
+        except AttributeError:
+            errors.set(
+                "No implementation was selected for one of the functions/algorithms."
+            )
+        except Exception as ex:
+            print(ex)
+            errors.set(traceback.format_exc())
+            # raise ex
+        else:
+            stream_results = runner.get_stream_results()
+            batch_results = runner.get_batch_results()
 
-        results["runner"].set(runner)
-        results["streaming_results"].set(runner.get_stream_results())
-        results["batch_results"].set(runner.get_batch_results())
-        results["calculation_time"].set(runner.calculation_time_per_edge)
-        results["memory_usage"].set(runner.memory_usage)
+            if type(stream_results) is dict:
+                stream_results = stream_results.items()
+            elif type(stream_results) is not list:
+                stream_results = list(stream_results)
+            
+            if type(batch_results) is dict:
+                batch_results = batch_results.items()
+            elif type(batch_results) is not list:
+                batch_results = list(batch_results)
+              
+            results["runner"].set(runner)
+            results["streaming_results"].set(stream_results)
+            results["batch_results"].set(batch_results)
+            results["calculation_time"].set(runner.calculation_time_per_edge)
+            results["memory_usage"].set(runner.memory_usage)
 
     @reactive.effect
     @reactive.event(input.run_experiment)
@@ -79,9 +107,6 @@ def server_run_experiment(
             errors.set(
                 "No implementation was selected for one of the functions/algorithms."
             )
-        except UnicodeDecodeError:
-            errors.set(
-                "The dataset you provided is not in a UTF-8-compatible encoding."
-            )
+        
         except Exception:
             errors.set(traceback.format_exc())

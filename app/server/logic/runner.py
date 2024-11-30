@@ -168,12 +168,17 @@ class Runner:
         streaming_results, batch_results = self.get_parameterized_results(
             orderDescending, cardinality
         )
+
+        streaming_results = [node for node, val in streaming_results]
+        batch_results = [node for node, val in batch_results]
+
         set_a = set(streaming_results)
         set_b = set(batch_results)
 
         intersection = set_a.intersection(set_b)
         union = set_a.union(set_b)
-        return float(len(intersection)) / float(len(union))
+
+        return len(intersection) / len(union)
 
     def get_streaming_accuracy(
         self, orderDescending: bool = False, cardinality: int = 10
@@ -223,9 +228,11 @@ class Runner:
                     preprocessing_end = time.perf_counter_ns()
                     preprocessing_duration = preprocessing_end - preprocessing_start
                     self._preprocessing_time_per_edge.append(preprocessing_duration)
-
+               
                 property_start = time.perf_counter_ns()
+                
                 self._streaming.on_edge_calculate(row)  # type: ignore
+                
                 property_end = time.perf_counter_ns()
                 calculation_duration = property_end - property_start
                 self._calculation_time_per_edge.append(calculation_duration)
