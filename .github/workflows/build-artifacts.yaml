@@ -49,7 +49,7 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: 📝 Format code
-        run: uvx ruff format --check --exclude "algorithms\_config\templates\,app\server\logic\file_reading\processing_interface.py" .
+        run: uvx ruff format --check --exclude "algorithms/_config/templates,app/server/logic/file_reading/processing_interface.py" .
 
   type-checking:
     name: 👀 Type checking
