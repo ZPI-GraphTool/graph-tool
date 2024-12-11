@@ -70,10 +70,15 @@ def server_results(input: Inputs, results: dict[str, reactive.Value]):
         )
         return line_plot
 
+    @reactive.calc
+    def calculation_time_mean() -> str:
+        df = pd.DataFrame(results["calculation_time"].get(), columns=["time [ns]"])
+        return f"average: {df.mean().values[0]:.6g} ns"
+
     @render.ui
     def calculation_time_plot() -> Tag:
         return ui.card(
-            ui.card_header("Calculation time"),
+            ui.card_header(f"Calculation time\t|\t{calculation_time_mean()}"),
             render_widget(get_calculation_time_plot),  # type: ignore
             full_screen=True,
         )
@@ -91,10 +96,15 @@ def server_results(input: Inputs, results: dict[str, reactive.Value]):
         )
         return line_plot
 
+    @reactive.calc
+    def memory_usage_mean() -> str:
+        df = pd.DataFrame(results["memory_usage"].get(), columns=["edge", "memory"])
+        return f"average: {df['memory'].mean():.6g} B"
+
     @render.ui
     def memory_usage_plot() -> Tag:
         return ui.card(
-            ui.card_header("Memory usage history"),
+            ui.card_header(f"Memory usage history\t|\t{memory_usage_mean()}"),
             render_widget(get_memory_usage_plot),  # type: ignore
             full_screen=True,
         )

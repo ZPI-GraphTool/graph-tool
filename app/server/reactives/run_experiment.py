@@ -87,7 +87,6 @@ def server_run_experiment(
     @reactive.effect
     @reactive.event(input.run_experiment)
     def _() -> None:
-        global ERROR_COUNT
         try:
             dataset_path, preprocess_path, streaming_path, batch_path = get_paths(input)
             runner = Runner(

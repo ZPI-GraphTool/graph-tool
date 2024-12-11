@@ -5,6 +5,7 @@ from pathlib import Path
 from app.server._config import (
     ALGORITHM_TEMPLATES_DIRECTORY,
     ALGORITHMS_DIRECTORY,
+    PREDEFINED_ALGORITHMS,
     AlgorithmType,
 )
 
@@ -14,9 +15,14 @@ from .open_file import open_file
 class AlgorithmTypeSpecification:
     @classmethod
     def new_file(cls, algorithm_type: AlgorithmType) -> str:
-        prefix = "algorithm"
-        if algorithm_type == AlgorithmType.PREPROCESSING:
-            prefix = "function"
+        prefix: str = ""
+        match algorithm_type:
+            case AlgorithmType.STREAMING:
+                prefix = "streaming_algorithm"
+            case AlgorithmType.BATCH:
+                prefix = "batch_algorithm"
+            case AlgorithmType.PREPROCESSING:
+                prefix = "preprocessing_function"
         # this caches how many files of each type have been created so far
         # so that we know what number to name the new file of a given type
         with shelve.open(ALGORITHMS_DIRECTORY / "counter") as counter:
@@ -78,4 +84,10 @@ def edit_algorithm(
 
         open_file(new_file_path)
     else:
-        open_file(Path(option))
+        algorithm_path = Path(option).resolve()
+        if algorithm_path in PREDEFINED_ALGORITHMS:
+            _, destination = AlgorithmTypeSpecification.paths(algorithm_type)
+            new_file_path = shutil.copy(option, destination)
+            open_file(new_file_path)
+        else:
+            open_file(Path(option))

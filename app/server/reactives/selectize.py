@@ -15,7 +15,9 @@ from app.server._config import (
     ALGORITHMS_DIRECTORY,
     CONNECTION_PREPROCESSING_FUNCTION_FILE,
     DEGREE_CENTRALITY_BATCH_ALGORITHM_FILE,
-    DEGREE_CENTRALITY_STREAM_ALGORITHM_FILE,
+    DEGREE_CENTRALITY_STREAM_ACCURATE_ALGORITHM_FILE,
+    DEGREE_CENTRALITY_STREAM_APPROXIMATE_ALGORITHM_FILE,
+    MISRA_GRIES_STREAM_ALGORITHM_FILE,
     AlgorithmType,
 )
 
@@ -82,11 +84,15 @@ def server_selectize(input: Inputs) -> None:
                     "Existing": get_algorithms(AlgorithmType.STREAMING),
                     "Presupplied": {
                         str(
-                            DEGREE_CENTRALITY_STREAM_ALGORITHM_FILE
-                        ): "Degree centrality stream",
+                            DEGREE_CENTRALITY_STREAM_ACCURATE_ALGORITHM_FILE
+                        ): "Degree centrality stream accurate",
+                        str(
+                            DEGREE_CENTRALITY_STREAM_APPROXIMATE_ALGORITHM_FILE
+                        ): "Degree centrality stream approximate",
+                        str(MISRA_GRIES_STREAM_ALGORITHM_FILE): "Misra-Gries stream",
                     },
                 },
-                selected=str(DEGREE_CENTRALITY_STREAM_ALGORITHM_FILE),
+                selected=str(DEGREE_CENTRALITY_STREAM_ACCURATE_ALGORITHM_FILE),
             ),
         )
 

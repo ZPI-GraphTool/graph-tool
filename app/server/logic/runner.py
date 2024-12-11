@@ -216,7 +216,6 @@ class Runner:
         # self._memory_usage.append([process.memory_info().rss*MB_ratio])
 
         with open(self._dataset, encoding="utf-8") as file:
-            raise TypeError("This is a test error")
             reader = self._file_reading.get_reader(file)
 
             for row in reader:  # type: ignore
