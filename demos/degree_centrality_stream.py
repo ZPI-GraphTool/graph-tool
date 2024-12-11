@@ -32,4 +32,4 @@ class DegreeCentralityAccurateVersion(StreamingAlgorithm):
             self.results[k] = self.degrees[k] / (number_of_nodes - 1)
 
     def submit_results(self) -> list[tuple[Any, numeric]]:
-        return sorted(self.results.items(), key=lambda item: item[1], reverse=True)
+        return self.results.items()

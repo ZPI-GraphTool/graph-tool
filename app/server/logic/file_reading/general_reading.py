@@ -18,8 +18,6 @@ class TEXTFile(FileProcessingStrategy):
         self._file_path = file_path
         self._process: Callable[[str], Sequence | dict] = processing_function
 
-    def get_type_hint(self) -> LiteralString:
-        return "The edge is a string unless a specified preprocessing method has been supplied. In the latter case the format of the edge matches the return of the preprocessing method."
 
     def get_reader(self, file_stream: TextIOWrapper) -> TextIOWrapper:
         return file_stream

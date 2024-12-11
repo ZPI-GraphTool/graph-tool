@@ -65,8 +65,9 @@ def server_run_experiment(
             errors.set(traceback.format_exc())
             # raise ex
         else:
-            stream_results = runner.get_stream_results()
-            batch_results = runner.get_batch_results()
+            stream_results = sorted(runner.get_stream_results(), key=lambda item: item[1], reverse=True)
+            batch_results = sorted(runner.get_batch_results(), key=lambda item: item[1], reverse=True)
+            
 
             if type(stream_results) is dict:
                 stream_results = stream_results.items()

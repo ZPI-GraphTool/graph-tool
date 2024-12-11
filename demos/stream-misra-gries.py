@@ -29,5 +29,4 @@ class MisraAlgorithm(StreamingAlgorithm):
         
 
     def submit_results(self) -> list[tuple[Any, numeric]]: 
-        
-        return self.results
+        return self.results.items()

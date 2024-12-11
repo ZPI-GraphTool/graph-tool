@@ -21,7 +21,4 @@ class DegreeCentralityBatch(BatchAlgorithm):
         self.results = nx.degree_centrality(graph)
 
     def submit_results(self) -> list[tuple[Any, numeric]]:
-        degree_centralities = sorted(
-            self.results.items(), key=lambda item: item[1], reverse=True
-        )
-        return degree_centralities
+        return self.results.items()
