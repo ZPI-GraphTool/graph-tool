@@ -1,6 +1,5 @@
 from io import TextIOWrapper
 from pathlib import Path
-from typing import LiteralString
 
 import pandas as pd
 from scipy.io import mminfo, mmread
@@ -11,7 +10,6 @@ from .processing_interface import FileProcessingStrategy
 class MTXFile(FileProcessingStrategy):
     def __init__(self, file_path: Path) -> None:
         self._file_path = file_path
-
 
     def get_reader(self, file_stream: TextIOWrapper) -> TextIOWrapper:
         return file_stream
@@ -47,9 +45,9 @@ class MTXFile(FileProcessingStrategy):
 
     def get_dataframe(self) -> pd.DataFrame:
         matrix = mmread(self._file_path)
-        
+
         lst = []
         for i in range(len(matrix.nonzero()[0])):
-            lst.append((matrix.nonzero()[0][i],matrix.nonzero()[1][i]))
+            lst.append((matrix.nonzero()[0][i], matrix.nonzero()[1][i]))
 
         return pd.DataFrame(lst)

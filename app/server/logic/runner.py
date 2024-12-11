@@ -11,6 +11,7 @@ from pympler.asizeof import asizeof
 from algorithms._config.interfaces import (
     BatchAlgorithm,
     PreprocessEdge,
+    ResultList,
     StreamingAlgorithm,
 )
 from app.server._config import (
@@ -19,8 +20,6 @@ from app.server._config import (
 )
 
 from .file_reading import CSVFile, MTXFile, TEXTFile
-
-ResultList = list[tuple[Any, int | float]]
 
 
 def get_class_instance_from(
@@ -77,7 +76,7 @@ class Runner:
             else:
                 self._file_reading = TEXTFile(self._dataset)
 
-        # time inverals are now saved using the perf_counter_ns for greater precision
+        # time intervals are now saved using the perf_counter_ns for greater precision
         self._calculation_time_per_edge = []
         self._preprocessing_time_per_edge = []
 
@@ -194,19 +193,19 @@ class Runner:
         return correct / len(streaming_results)
 
     def validate_implementation(self) -> None:
-        if not isinstance(self._streaming, StreamingAlgorithm):
+        if self._with_preprocessing and (
+            not isinstance(self._preprocessing, PreprocessEdge)
+        ):
+            raise TypeError(
+                "Preprocessing algorithm is not implemeted right - cannot instantiate PreprocessEdge interface. Check if all methods have been supplied together with the right method name."
+            )
+        elif not isinstance(self._streaming, StreamingAlgorithm):
             raise TypeError(
                 "Streaming algorithm is not implemeted right - cannot instantiate StreamingAlgorithm interface. Check if all methods have been supplied together with the right method name."
             )
         elif self._with_batch and (not isinstance(self._batch, BatchAlgorithm)):
             raise TypeError(
                 "Batch algorithm is not implemeted right - cannot instantiate BatchAlgorithm interface. Check if all methods have been supplied together with the right method name."
-            )
-        elif self._with_preprocessing and (
-            not isinstance(self._preprocessing, PreprocessEdge)
-        ):
-            raise TypeError(
-                "Preprocessing algorithm is not implemeted right - cannot instantiate PreprocessEdge interface. Check if all methods have been supplied together with the right method name."
             )
 
     def run_experiment(self, sample_count: int = 100) -> None:
@@ -217,6 +216,7 @@ class Runner:
         # self._memory_usage.append([process.memory_info().rss*MB_ratio])
 
         with open(self._dataset, encoding="utf-8") as file:
+            raise TypeError("This is a test error")
             reader = self._file_reading.get_reader(file)
 
             for row in reader:  # type: ignore
@@ -228,12 +228,11 @@ class Runner:
                     preprocessing_end = time.perf_counter_ns()
                     preprocessing_duration = preprocessing_end - preprocessing_start
                     self._preprocessing_time_per_edge.append(preprocessing_duration)
-               
+
                 property_start = time.perf_counter_ns()
-                
                 self._streaming.on_edge_calculate(row)  # type: ignore
-                
                 property_end = time.perf_counter_ns()
+
                 calculation_duration = property_end - property_start
                 self._calculation_time_per_edge.append(calculation_duration)
 

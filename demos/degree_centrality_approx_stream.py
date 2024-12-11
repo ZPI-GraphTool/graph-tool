@@ -1,6 +1,4 @@
-from typing import Any
-
-from algorithms._config.interfaces import StreamingAlgorithm, numeric
+from algorithms._config.interfaces import ResultList, StreamingAlgorithm
 
 
 class DegreeCentralityApproximateVersion(StreamingAlgorithm):
@@ -27,6 +25,5 @@ class DegreeCentralityApproximateVersion(StreamingAlgorithm):
         self.degrees[vertex_start] = self.degrees[vertex_start] + 1
         self.degrees[vertex_end] = self.degrees[vertex_end] + 1
 
-
-    def submit_results(self) -> list[tuple[Any, numeric]]:
-        return self.degrees.items()
+    def submit_results(self) -> ResultList:
+        return list(self.degrees.items())

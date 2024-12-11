@@ -1,6 +1,4 @@
-from typing import Any
-
-from algorithms._config.interfaces import StreamingAlgorithm, numeric
+from algorithms._config.interfaces import ResultList, StreamingAlgorithm
 
 
 class DegreeCentralityAccurateVersion(StreamingAlgorithm):
@@ -31,5 +29,5 @@ class DegreeCentralityAccurateVersion(StreamingAlgorithm):
         for k, v in self.results.items():
             self.results[k] = self.degrees[k] / (number_of_nodes - 1)
 
-    def submit_results(self) -> list[tuple[Any, numeric]]:
-        return self.results.items()
+    def submit_results(self) -> ResultList:
+        return list(self.results.items())

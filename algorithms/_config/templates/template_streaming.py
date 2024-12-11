@@ -1,15 +1,15 @@
-from typing import Any, Sequence
+from typing import Sequence
 
-from algorithms._config.interfaces import StreamingAlgorithm, numeric
+from algorithms._config.interfaces import ResultList, StreamingAlgorithm
 
 
 # Change this class name to something unique and descriptive
 class NewStreamingAlgorithm(StreamingAlgorithm):
-    def __init__(self) -> None: 
+    def __init__(self) -> None:
         ...
 
-    def on_edge_calculate(self, edge: Sequence | dict) -> None: 
+    def on_edge_calculate(self, edge: Sequence | dict) -> None:
         ...
 
-    def submit_results(self) -> list[tuple[Any, numeric]]: 
+    def submit_results(self) -> ResultList:
         ...

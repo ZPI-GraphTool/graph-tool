@@ -1,6 +1,6 @@
 from io import TextIOWrapper
 from pathlib import Path
-from typing import Callable, LiteralString, Sequence
+from typing import Callable, Sequence
 
 import pandas as pd
 
@@ -17,7 +17,6 @@ class TEXTFile(FileProcessingStrategy):
     ) -> None:
         self._file_path = file_path
         self._process: Callable[[str], Sequence | dict] = processing_function
-
 
     def get_reader(self, file_stream: TextIOWrapper) -> TextIOWrapper:
         return file_stream

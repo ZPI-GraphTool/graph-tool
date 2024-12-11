@@ -1,9 +1,7 @@
-from typing import Any
-
 import networkx as nx
 import pandas as pd
 
-from algorithms._config.interfaces import BatchAlgorithm, numeric
+from algorithms._config.interfaces import BatchAlgorithm, ResultList
 
 
 class DegreeCentralityBatch(BatchAlgorithm):
@@ -20,5 +18,5 @@ class DegreeCentralityBatch(BatchAlgorithm):
         )
         self.results = nx.degree_centrality(graph)
 
-    def submit_results(self) -> list[tuple[Any, numeric]]:
-        return self.results.items()
+    def submit_results(self) -> ResultList:
+        return list(self.results.items())

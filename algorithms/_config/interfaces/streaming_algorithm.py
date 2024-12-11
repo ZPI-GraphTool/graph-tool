@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any
 
-numeric = int | float
+ResultList = list[tuple[Any, int | float]]
 
 
 class StreamingAlgorithm(ABC):
@@ -32,7 +32,7 @@ class StreamingAlgorithm(ABC):
         ...
 
     @abstractmethod
-    def submit_results(self) -> list[tuple[Any, numeric]]:
+    def submit_results(self) -> ResultList:
         """
         Submits the result of the streaming algorithm - determines part of the results to be saved to file
         and displayed in the UI.

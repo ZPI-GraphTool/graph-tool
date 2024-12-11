@@ -30,14 +30,15 @@ def kill_python():
 
 def server(input: Inputs, output: Outputs, session: Session):
     server_selectize(input)
-    server_edit(input)
+    server_edit(input, errors)
     server_run_experiment(input, results, errors)
     server_results(input, results)
 
     @reactive.effect
     @reactive.event(errors)
     def show_error_modal():
-        modal = ui.modal(str(errors.get()), title="Error", easy_close=True, size="l")
+        error_rand, error_message = errors.get()
+        modal = ui.modal(error_message, title="Error", easy_close=True, size="l")
         ui.modal_show(modal)
 
     @reactive.effect

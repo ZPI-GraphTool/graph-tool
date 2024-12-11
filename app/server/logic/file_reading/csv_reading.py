@@ -1,7 +1,6 @@
 from csv import DictReader
 from io import TextIOWrapper
 from pathlib import Path
-from typing import LiteralString
 
 import pandas as pd
 
@@ -11,7 +10,6 @@ from .processing_interface import FileProcessingStrategy
 class CSVFile(FileProcessingStrategy):
     def __init__(self, file_path: Path) -> None:
         self._file_path = file_path
-
 
     def get_reader(self, file_stream: TextIOWrapper) -> DictReader[str]:
         return DictReader(file_stream)

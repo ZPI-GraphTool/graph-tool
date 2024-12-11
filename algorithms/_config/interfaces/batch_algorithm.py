@@ -3,7 +3,7 @@ from typing import Any
 
 import pandas as pd
 
-numeric = int | float
+ResultList = list[tuple[Any, int | float]]
 
 
 class BatchAlgorithm(ABC):
@@ -39,7 +39,7 @@ class BatchAlgorithm(ABC):
         ...
 
     @abstractmethod
-    def submit_results(self) -> list[tuple[Any, numeric]]:
+    def submit_results(self) -> ResultList:
         """
         Returns the result of the batch algorithm in the form of a node rank.
 

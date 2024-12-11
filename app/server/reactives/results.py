@@ -116,15 +116,16 @@ def server_results(input: Inputs, results: dict[str, reactive.Value]):
     def get_comparison_metrics() -> tuple[float | Any, float | Any, str, int]:
         runner: Runner = results["runner"].get()
         order, cardinality = (
-            input.node_rank_order() == "Descending",
+            input.node_rank_order(),
             input.node_rank_cardinality(),
         )
-        jaccard_similarity = runner.get_jaccard_similarity(order, cardinality)
-        streaming_accuracy = runner.get_streaming_accuracy(order, cardinality)
+        order_bool = order == "Descending"
+        jaccard_similarity = runner.get_jaccard_similarity(order_bool, cardinality)
+        streaming_accuracy = runner.get_streaming_accuracy(order_bool, cardinality)
         return (
             jaccard_similarity,
             streaming_accuracy,
-            input.node_rank_order(),
+            order,
             cardinality,
         )
 

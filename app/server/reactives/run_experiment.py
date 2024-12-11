@@ -1,6 +1,7 @@
 import traceback
 from datetime import datetime
 from pathlib import Path
+from random import random
 from typing import Any
 
 from shiny import Inputs, reactive, ui
@@ -50,35 +51,33 @@ def server_run_experiment(
         try:
             runner.validate_implementation()
             runner.run_experiment()
-        except UnicodeDecodeError:
-            errors.set(
-                "The dataset you provided is not in a UTF-8-compatible encoding."
-            )
-        except TypeError as type_error:
-            errors.set(type_error)
-        except AttributeError:
-            errors.set(
-                "No implementation was selected for one of the functions/algorithms."
-            )
-        except Exception as ex:
-            print(ex)
-            errors.set(traceback.format_exc())
-            # raise ex
+        except Exception as exception:
+            message = traceback.format_exc()
+            if isinstance(exception, UnicodeDecodeError):
+                message = (
+                    "The dataset you provided is not in a UTF-8-compatible encoding."
+                )
+            elif isinstance(exception, TypeError):
+                message = str(exception)
+            errors.set((random(), message))
         else:
-            stream_results = sorted(runner.get_stream_results(), key=lambda item: item[1], reverse=True)
-            batch_results = sorted(runner.get_batch_results(), key=lambda item: item[1], reverse=True)
-            
+            stream_results = sorted(
+                runner.get_stream_results(), key=lambda item: item[1], reverse=True
+            )
+            batch_results = sorted(
+                runner.get_batch_results(), key=lambda item: item[1], reverse=True
+            )
 
             if type(stream_results) is dict:
                 stream_results = stream_results.items()
             elif type(stream_results) is not list:
                 stream_results = list(stream_results)
-            
+
             if type(batch_results) is dict:
                 batch_results = batch_results.items()
             elif type(batch_results) is not list:
                 batch_results = list(batch_results)
-              
+
             results["runner"].set(runner)
             results["streaming_results"].set(stream_results)
             results["batch_results"].set(batch_results)
@@ -88,6 +87,7 @@ def server_run_experiment(
     @reactive.effect
     @reactive.event(input.run_experiment)
     def _() -> None:
+        global ERROR_COUNT
         try:
             dataset_path, preprocess_path, streaming_path, batch_path = get_paths(input)
             runner = Runner(
@@ -100,14 +100,10 @@ def server_run_experiment(
             ui.update_text(
                 "experiment_name", value=datetime.now().strftime("%Y-%m-%d %H_%M_%S")
             )
-        except MissingPathError as missing_path_error:
-            errors.set(missing_path_error)
-        except TypeError as type_error:
-            errors.set(type_error)
-        except AttributeError:
-            errors.set(
-                "No implementation was selected for one of the functions/algorithms."
-            )
-        
-        except Exception:
-            errors.set(traceback.format_exc())
+        except Exception as exception:
+            message = traceback.format_exc()
+            if isinstance(exception, MissingPathError):
+                message = str(exception)
+            elif isinstance(exception, AttributeError):
+                message = "No implementation was selected for one of the functions/algorithms."
+            errors.set((random(), message))
