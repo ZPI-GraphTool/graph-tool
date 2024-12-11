@@ -12,8 +12,6 @@ class MTXFile(FileProcessingStrategy):
     def __init__(self, file_path: Path) -> None:
         self._file_path = file_path
 
-    def get_type_hint(self) -> LiteralString:
-        return "The given edge is a tuple. Access its data by indexing: 0 - source node, 1 - destination node, (optionally) 2 - weight of the edge."
 
     def get_reader(self, file_stream: TextIOWrapper) -> TextIOWrapper:
         return file_stream
@@ -49,6 +47,9 @@ class MTXFile(FileProcessingStrategy):
 
     def get_dataframe(self) -> pd.DataFrame:
         matrix = mmread(self._file_path)
-        dense_matrix = matrix.todense()  # type: ignore
+        
+        lst = []
+        for i in range(len(matrix.nonzero()[0])):
+            lst.append((matrix.nonzero()[0][i],matrix.nonzero()[1][i]))
 
-        return pd.DataFrame(dense_matrix)
+        return pd.DataFrame(lst)

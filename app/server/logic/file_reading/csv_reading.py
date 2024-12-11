@@ -12,8 +12,6 @@ class CSVFile(FileProcessingStrategy):
     def __init__(self, file_path: Path) -> None:
         self._file_path = file_path
 
-    def get_type_hint(self) -> LiteralString:
-        return "The edge is a dictionary. Its keys are the headers of the supplied .csv file."
 
     def get_reader(self, file_stream: TextIOWrapper) -> DictReader[str]:
         return DictReader(file_stream)
