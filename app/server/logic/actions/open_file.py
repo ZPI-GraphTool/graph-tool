@@ -3,11 +3,15 @@ import subprocess
 import sys
 from pathlib import Path
 
+from app.server._config import PROJECT_DIRECTORY
+
 
 def open_file(file_path: Path) -> None:
     try:
-        subprocess.call(["code", file_path])
-    except FileNotFoundError:
+        subprocess.run(
+            ["code", "-r", PROJECT_DIRECTORY, "-g", file_path], check=True, shell=True
+        )
+    except subprocess.CalledProcessError:
         if sys.platform == "win32":
             os.startfile(file_path)
         else:

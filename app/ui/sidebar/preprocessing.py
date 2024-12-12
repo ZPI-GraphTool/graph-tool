@@ -6,7 +6,7 @@ from shiny import ui
 def preprocessing() -> tuple[Tag, ...]:
     return (
         ui.panel_conditional(
-            "input.with_preprocessing == true",
+            "input.select_dataset == 0 && input.with_preprocessing == true",
             ui.row(
                 ui.column(10, "Preprocessing function", class_="selectize-label"),
                 ui.column(

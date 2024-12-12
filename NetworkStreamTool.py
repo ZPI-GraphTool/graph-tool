@@ -9,8 +9,13 @@ from pystray import MenuItem as item
 
 from app import kill_python, shiny_app
 
-# STATIC_DIRECTORY = Path(__file__).parent / "_static"
-STATIC_DIRECTORY = Path(sys.executable).parent / "_static"
+EXECUTABLE = sys.executable.split("\\")[-1]
+PROJECT_DIRECTORY = (
+    (Path(__file__) if EXECUTABLE == "python.exe" else Path(sys.executable))
+    .resolve()
+    .parent
+)
+ASSETS_DIRECTORY = PROJECT_DIRECTORY / "_assets"
 
 
 def open_app_in_browser():
@@ -21,7 +26,7 @@ if __name__ == "__main__":
     run_shiny_app = Thread(target=shiny_app.run)
     run_shiny_app.start()
 
-    image = Image.open(STATIC_DIRECTORY / "icon.png")
+    image = Image.open(ASSETS_DIRECTORY / "icon.png")
     menu = (
         item("Open app", open_app_in_browser),
         item("Quit", kill_python),

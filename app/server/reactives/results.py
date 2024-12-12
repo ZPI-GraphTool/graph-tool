@@ -1,5 +1,6 @@
-from datetime import datetime
+import traceback
 from pathlib import Path
+from random import random
 from typing import Any
 
 import faicons as fa
@@ -10,25 +11,17 @@ from plotly.graph_objs import Figure
 from shiny import Inputs, reactive, render, ui
 from shinywidgets import render_widget
 
-from app.server.logic.actions.save_results import (
-    save_results_to_latex,
-    save_results_to_markdown,
-)
-from app.server.logic.runner import Runner
-
-from .selectize import get_class_name_from
+from app.server._config import get_class_name_from
+from app.server.logic import Runner
+from app.server.logic.actions import save_results
 
 
-def get_experiment_name(experiment_name: str) -> str | Path:
-    current_date = Path(datetime.now().strftime("%Y-%m-%d"))
-    current_time = Path(datetime.now().strftime("%H_%M_%S"))
-    ui.update_text(
-        "experiment_name", placeholder=f"{str(current_date)} {str(current_time)}"
-    )
-    return experiment_name or current_date / current_time
-
-
-def server_results(input: Inputs, results: dict[str, reactive.Value]):
+def server_results(
+    input: Inputs,
+    run_paths: dict[str, reactive.Value],
+    results: dict[str, reactive.Value],
+    error: reactive.Value,
+) -> None:
     @reactive.calc
     def plotly_template() -> str:
         return "plotly_dark" if input.mode() == "dark" else "plotly"
@@ -110,11 +103,11 @@ def server_results(input: Inputs, results: dict[str, reactive.Value]):
         )
 
     def get_total_edge_count() -> int:
-        runner = results["runner"].get()
+        runner: Runner = results["runner"].get()
         return runner.edge_count
 
     def get_dataset_size() -> str:
-        runner = results["runner"].get()
+        runner: Runner = results["runner"].get()
         size = runner.dataset_size
         for unit in ["B", "KB", "MB", "GB", "TB"]:
             if size < 1024:
@@ -294,29 +287,31 @@ def server_results(input: Inputs, results: dict[str, reactive.Value]):
     @reactive.extended_task
     async def save_results_task(output_format: str, **kwargs) -> None:
         output_format = output_format.lower()
-        if output_format == "markdown":
-            save_results_to_markdown(**kwargs)
-        elif output_format == "latex":
-            save_results_to_latex(**kwargs)
-        else:
-            raise NotImplementedError(f"Output format {output_format} is not supported")
+        try:
+            save_results(output_format, **kwargs)
+        except Exception:
+            error.set((random(), traceback.format_exc()))
 
     @reactive.effect
     @reactive.event(input.save_results)
     def _() -> None:
         (
-            preprocessing_function,
-            batch_algorithm,
+            preprocessing_name,
+            batch_name,
             jaccard_similarity,
             streaming_accuracy,
             order,
             cardinality,
             batch_node_rank,
         ) = None, None, None, None, None, None, None
-        if input.with_preprocessing() and input.select_preprocessing() != "New":
-            preprocessing_function = input.select_preprocessing()
-        if input.with_batch():
-            batch_algorithm = get_class_name_from(input.select_batch())
+        dataset_path: Path = run_paths["dataset_path"].get()
+        preprocessing_path: Path | None = run_paths["preprocessing_path"].get()
+        streaming_path: Path = run_paths["streaming_path"].get()
+        batch_path: Path | None = run_paths["batch_path"].get()
+        if preprocessing_path:
+            preprocessing_name = get_class_name_from(preprocessing_path)
+        if batch_path:
+            batch_name = get_class_name_from(batch_path)
             jaccard_similarity, streaming_accuracy, order, cardinality = (
                 get_comparison_metrics()
             )
@@ -325,9 +320,13 @@ def server_results(input: Inputs, results: dict[str, reactive.Value]):
         save_results_task(
             output_format=input.output_format(),
             experiment_name=input.experiment_name(),
-            preprocessing_function=preprocessing_function,
-            streaming_algorithm=get_class_name_from(input.select_streaming()),
-            batch_algorithm=batch_algorithm,
+            dataset=dataset_path.name,
+            preprocessing_path=preprocessing_path,
+            preprocessing_name=preprocessing_name,
+            streaming_path=streaming_path,
+            streaming_name=get_class_name_from(streaming_path),
+            batch_path=batch_path,
+            batch_name=batch_name,
             total_edge_count=get_total_edge_count(),
             dataset_size=get_dataset_size(),
             order=order,

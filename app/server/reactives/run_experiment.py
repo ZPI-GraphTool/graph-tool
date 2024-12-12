@@ -6,7 +6,10 @@ from typing import Any
 
 from shiny import Inputs, reactive, ui
 
-from app.server._config import CONNECTIONS_CSV_FILE
+from app.server._config import (
+    CONNECTION_PREPROCESSING_FUNCTION_FILE,
+    CONNECTIONS_CSV_FILE,
+)
 from app.server.logic import Runner
 
 
@@ -30,20 +33,28 @@ def select_dataset(option: str, path: list[dict[str, str]]) -> Path:
 
 
 def get_paths(input: Inputs) -> tuple[Any, ...]:
-    dataset_path: Path = select_dataset(input.select_dataset(), input.dataset_path())
-    preprocess_path: Path | None = (
-        input.select_preprocessing() if input.with_preprocessing() else None
-    )
-    streaming_path: Path = input.select_streaming()
-    batch_path: Path | None = input.select_batch() if input.with_batch() else None
+    dataset_path = select_dataset(input.select_dataset(), input.dataset_path())
 
-    return dataset_path, preprocess_path, streaming_path, batch_path
+    preprocessing_path = None
+    if dataset_path == CONNECTIONS_CSV_FILE and input.with_preprocessing() is False:
+        preprocessing_path = CONNECTION_PREPROCESSING_FUNCTION_FILE
+    elif input.with_preprocessing():
+        preprocessing_path = Path(input.select_preprocessing()).resolve()
+
+    streaming_path = Path(input.select_streaming()).resolve()
+
+    batch_path = None
+    if input.with_batch():
+        batch_path = Path(input.select_batch()).resolve()
+
+    return dataset_path, preprocessing_path, streaming_path, batch_path
 
 
 def server_run_experiment(
     input: Inputs,
+    run_paths: dict[str, reactive.Value],
     results: dict[str, reactive.Value],
-    errors: reactive.Value,
+    error: reactive.Value,
 ) -> None:
     @ui.bind_task_button(button_id="run_experiment")
     @reactive.extended_task
@@ -59,7 +70,7 @@ def server_run_experiment(
                 )
             elif isinstance(exception, TypeError):
                 message = str(exception)
-            errors.set((random(), message))
+            error.set((random(), message))
         else:
             stream_results = sorted(
                 runner.get_stream_results(), key=lambda item: item[1], reverse=True
@@ -96,6 +107,10 @@ def server_run_experiment(
                 batch_path=batch_path,
             )
             run_experiment(runner)
+            run_paths["dataset_path"].set(dataset_path)
+            run_paths["preprocessing_path"].set(preprocess_path)
+            run_paths["streaming_path"].set(streaming_path)
+            run_paths["batch_path"].set(batch_path)
             ui.update_text(
                 "experiment_name", value=datetime.now().strftime("%Y-%m-%d %H_%M_%S")
             )
@@ -105,4 +120,4 @@ def server_run_experiment(
                 message = str(exception)
             elif isinstance(exception, AttributeError):
                 message = "No implementation was selected for one of the functions/algorithms."
-            errors.set((random(), message))
+            error.set((random(), message))

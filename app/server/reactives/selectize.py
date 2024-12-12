@@ -1,16 +1,5 @@
-import importlib.util
-import inspect
-import os
-import sys
-from pathlib import Path
-
 from shiny import Inputs, reactive, render, ui
 
-from algorithms._config.interfaces import (
-    BatchAlgorithm,
-    PreprocessEdge,
-    StreamingAlgorithm,
-)
 from app.server._config import (
     ALGORITHMS_DIRECTORY,
     CONNECTION_PREPROCESSING_FUNCTION_FILE,
@@ -19,26 +8,8 @@ from app.server._config import (
     DEGREE_CENTRALITY_STREAM_APPROXIMATE_ALGORITHM_FILE,
     MISRA_GRIES_STREAM_ALGORITHM_FILE,
     AlgorithmType,
+    get_class_name_from,
 )
-
-
-def get_class_name_from(file_path: Path) -> str | None:
-    module_name = os.path.basename(file_path)
-
-    spec = importlib.util.spec_from_file_location(str(file_path), file_path)
-    module = importlib.util.module_from_spec(spec)  # type: ignore
-    sys.modules[module_name] = module
-    spec.loader.exec_module(module)  # type: ignore
-
-    for name_local in dir(module):
-        mysterious_thing = getattr(module, name_local)
-        if not inspect.isclass(mysterious_thing):
-            continue
-        MysteriousClass = mysterious_thing
-        if not inspect.isabstract(MysteriousClass) and issubclass(
-            MysteriousClass, (BatchAlgorithm, PreprocessEdge, StreamingAlgorithm)
-        ):
-            return name_local
 
 
 def get_algorithms(type: AlgorithmType) -> dict[str, str]:
@@ -68,7 +39,7 @@ def server_selectize(input: Inputs) -> None:
                         ): "Connection preprocessing",
                     },
                 },
-                selected="New",
+                selected=str(CONNECTION_PREPROCESSING_FUNCTION_FILE),
             ),
         )
 

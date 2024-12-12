@@ -11,7 +11,14 @@ from .reactives import (
     server_selectize,
 )
 
-errors = reactive.value()
+error = reactive.value()
+
+run_paths = {
+    "dataset_path": reactive.value(),
+    "preprocessing_path": reactive.value(),
+    "streaming_path": reactive.value(),
+    "batch_path": reactive.value(),
+}
 
 results = {
     "runner": reactive.value(),
@@ -30,14 +37,14 @@ def kill_python():
 
 def server(input: Inputs, output: Outputs, session: Session):
     server_selectize(input)
-    server_edit(input, errors)
-    server_run_experiment(input, results, errors)
-    server_results(input, results)
+    server_edit(input, error)
+    server_run_experiment(input, run_paths, results, error)
+    server_results(input, run_paths, results, error)
 
     @reactive.effect
-    @reactive.event(errors)
+    @reactive.event(error)
     def show_error_modal():
-        error_rand, error_message = errors.get()
+        error_rand, error_message = error.get()
         modal = ui.modal(error_message, title="Error", easy_close=True, size="l")
         ui.modal_show(modal)
 

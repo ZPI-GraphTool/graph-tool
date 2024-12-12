@@ -1,3 +1,4 @@
+import shutil
 from datetime import datetime
 from pathlib import Path
 from textwrap import dedent as dedent_to_lowest
@@ -5,7 +6,8 @@ from textwrap import dedent as dedent_to_lowest
 from plotly.graph_objs import Figure
 
 from app.server._config import EXPERIMENTS_DIRECTORY
-from app.server.logic.actions import open_file
+
+from .open_file import open_file
 
 
 def dedent_to_zero(message: str) -> str:
@@ -36,8 +38,19 @@ def write_plot_image(name: str, plot: Figure, results_directory: Path) -> str:
     return image_file
 
 
-def save_results_to_markdown(**kwargs) -> None:
+def copy_used_algorithm(results_directory: Path, algorithm_path: str | Path) -> None:
+    if not algorithm_path:
+        return
+    algorithm_path = Path(algorithm_path).resolve()
+    shutil.copy(algorithm_path, results_directory / algorithm_path.name)
+
+
+def save_results(output_format: str, **kwargs) -> None:
     results_directory = get_results_directory(kwargs["experiment_name"])
+
+    copy_used_algorithm(results_directory, kwargs["preprocessing_path"])
+    copy_used_algorithm(results_directory, kwargs["streaming_path"])
+    copy_used_algorithm(results_directory, kwargs["batch_path"])
 
     calculation_time_plot_file = write_plot_image(
         "calculation_time", kwargs["calculation_time"], results_directory
@@ -46,53 +59,62 @@ def save_results_to_markdown(**kwargs) -> None:
         "memory_usage", kwargs["memory_usage"], results_directory
     )
 
+    if output_format == "markdown":
+        results = get_results_as_markdown(
+            calculation_time_plot_file, memory_usage_plot_file, **kwargs
+        )
+        results_file = results_directory / "results.md"
+    elif output_format == "latex":
+        results = get_results_as_latex(
+            calculation_time_plot_file, memory_usage_plot_file, **kwargs
+        )
+        results_file = results_directory / "results.tex"
+    with Path.open(results_file, "w", encoding="utf-8") as file:  # type: ignore
+        file.write(results)  # type: ignore
+    open_file(results_file)  # type: ignore
+
+
+def get_results_as_markdown(
+    calculation_time_plot_file: str, memory_usage_plot_file: str, **kwargs
+) -> str:
     results = dedent_to_zero(f"""\
-        # **Results of experiment `{kwargs["experiment_name"]}`**
-        ## Metadata
-        * Preprocessing function: `{kwargs['preprocessing_function'] or "Not used"}`
-        * Streaming algorithm: `{kwargs['streaming_algorithm'] or "Not used"}`
-        * Batch algorithm: `{kwargs['batch_algorithm'] or "Not used"}`
-        ## Properties and metrics
+        # **Results of experiment `{kwargs["experiment_name"]}`**\n
+        ## Metadata\n
+        * Dataset: `{kwargs['dataset']}`
+        * Preprocessing function: `{kwargs['preprocessing_name'] or "Not used"}`
+        * Streaming algorithm: `{kwargs['streaming_name'] or "Not used"}`
+        * Batch algorithm: `{kwargs['batch_name'] or "Not used"}`\n
+        ## Properties and metrics\n
         * Total edge count: `{kwargs['total_edge_count']}`
-        * Size of dataset: `{kwargs['dataset_size']}`  \
+        * Size of dataset: `{kwargs['dataset_size']}`
     """)
-    if kwargs["batch_algorithm"]:
+    if kwargs["batch_name"]:
         results += dedent_to_zero(f"""\
             * Jaccard similarity: `{kwargs['jaccard_similarity']:.4g}` (order: `{kwargs['order']}`, cardinality: `{kwargs['cardinality']}`)
-            * Streaming accuracy: `{kwargs['streaming_accuracy']:.4g}`  \
+            * Streaming accuracy: `{kwargs['streaming_accuracy']:.4g}`
         """)
     results += dedent_to_zero(f"""\
-        ## Streaming node rank
-        {kwargs["streaming_node_rank"].to_markdown()}\
+        ## Streaming node rank\n
+        {kwargs["streaming_node_rank"].to_markdown()}
     """)
-    if kwargs["batch_algorithm"]:
+    if kwargs["batch_name"]:
         results += dedent_to_zero(f"""\
-            ## Batch node rank
-            {kwargs["batch_node_rank"].to_markdown()}\
+            ## Batch node rank\n
+            {kwargs["batch_node_rank"].to_markdown()}
         """)
     results += dedent_to_zero(f"""\
-        ## Calculation time
-        ![calculation_time](images/{calculation_time_plot_file})
-        ## Memory usage history
-        ![memory_usage](images/{memory_usage_plot_file})  \
+        ## Calculation time\n
+        ![calculation_time](images/{calculation_time_plot_file})\n
+        ## Memory usage history\n
+        ![memory_usage](images/{memory_usage_plot_file})
     """)
 
-    results_file = results_directory / "results.md"
-    with Path.open(results_file, "w", encoding="utf-8") as file:
-        file.write(results)
-    open_file(results_file)
+    return results
 
 
-def save_results_to_latex(**kwargs) -> None:
-    results_directory = get_results_directory(kwargs["experiment_name"])
-
-    calculation_time_plot_file = write_plot_image(
-        "calculation_time", kwargs["calculation_time"], results_directory
-    )
-    memory_usage_plot_file = write_plot_image(
-        "memory_usage", kwargs["memory_usage"], results_directory
-    )
-
+def get_results_as_latex(
+    calculation_time_plot_file: str, memory_usage_plot_file: str, **kwargs
+) -> str:
     experiment_name = kwargs["experiment_name"].replace("_", "\\_")
 
     results = dedent_to_lowest(f"""\
@@ -117,9 +139,10 @@ def save_results_to_latex(**kwargs) -> None:
 
         \\section*{{Metadata}}
         \\begin{{itemize}}
-            \\item Preprocessing function: \\texttt{{{kwargs['preprocessing_function'] or "Not used"}}}
-            \\item Streaming algorithm: \\texttt{{{kwargs['streaming_algorithm'] or "Not used"}}}
-            \\item Batch algorithm: \\texttt{{{kwargs['batch_algorithm'] or "Not used"}}}
+            \\item Dataset: \\texttt{{{kwargs['dataset']}}}
+            \\item Preprocessing function: \\texttt{{{kwargs['preprocessing_name'] or "Not used"}}}
+            \\item Streaming algorithm: \\texttt{{{kwargs['streaming_name'] or "Not used"}}}
+            \\item Batch algorithm: \\texttt{{{kwargs['batch_name'] or "Not used"}}}
         \\end{{itemize}}
 
         \\section*{{Properties and metrics}}
@@ -128,7 +151,7 @@ def save_results_to_latex(**kwargs) -> None:
             \\item Size of dataset: \\texttt{{{kwargs['dataset_size']}}}
         \\end{{itemize}}
     """)
-    if kwargs["batch_algorithm"]:
+    if kwargs["batch_name"]:
         results += dedent_to_lowest(f"""\
             \\begin{{itemize}}
                 \\item Jaccard similarity: \\texttt{{{kwargs['jaccard_similarity']:.4g}}} (order: \\texttt{{{kwargs['order']}}}, cardinality: \\texttt{{{kwargs['cardinality']}}})
@@ -138,7 +161,7 @@ def save_results_to_latex(**kwargs) -> None:
     results += "\n" + kwargs["streaming_node_rank"].to_latex(
         index=False, longtable=True, float_format="%.4g", caption="Streaming node rank"
     )
-    if kwargs["batch_algorithm"]:
+    if kwargs["batch_name"]:
         results += "\n" + kwargs["batch_node_rank"].to_latex(
             index=False, longtable=True, float_format="%.4g", caption="Batch node rank"
         )
@@ -157,7 +180,4 @@ def save_results_to_latex(**kwargs) -> None:
         \\end{{document}}
     """)
 
-    results_file = results_directory / "results.tex"
-    with Path.open(results_file, "w", encoding="utf-8") as file:
-        file.write(results)
-    open_file(results_file)
+    return results

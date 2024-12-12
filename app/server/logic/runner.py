@@ -14,10 +14,6 @@ from algorithms._config.interfaces import (
     ResultList,
     StreamingAlgorithm,
 )
-from app.server._config import (
-    CONNECTION_PREPROCESSING_FUNCTION_FILE,
-    CONNECTIONS_CSV_FILE,
-)
 
 from .file_reading import CSVFile, MTXFile, TEXTFile
 
@@ -56,8 +52,6 @@ class Runner:
         batch_path: Path | None,
     ):
         self._dataset = dataset_path
-        if self._dataset == CONNECTIONS_CSV_FILE and preprocessing_path is None:
-            preprocessing_path = CONNECTION_PREPROCESSING_FUNCTION_FILE
         self._with_preprocessing = preprocessing_path is not None
         self._with_batch = batch_path is not None
 

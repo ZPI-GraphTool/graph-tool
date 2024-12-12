@@ -8,14 +8,14 @@ from app.server.logic.actions import edit_algorithm
 from .run_experiment import MissingPathError, get_paths
 
 
-def server_edit(input: Inputs, errors: reactive.Value) -> None:
+def server_edit(input: Inputs, error: reactive.Value) -> None:
     @reactive.effect
     @reactive.event(input.edit_preprocessing)
     def _() -> None:
         try:
             dataset_path, _, _, _ = get_paths(input)
         except MissingPathError as mpe:
-            errors.set((random(), str(mpe)))
+            error.set((random(), str(mpe)))
         else:
             edit_algorithm(
                 input.select_preprocessing(),
@@ -29,7 +29,7 @@ def server_edit(input: Inputs, errors: reactive.Value) -> None:
         try:
             dataset_path, _, _, _ = get_paths(input)
         except MissingPathError as mpe:
-            errors.set((random(), str(mpe)))
+            error.set((random(), str(mpe)))
         else:
             edit_algorithm(
                 input.select_streaming(),
@@ -43,7 +43,7 @@ def server_edit(input: Inputs, errors: reactive.Value) -> None:
         try:
             dataset_path, _, _, _ = get_paths(input)
         except MissingPathError as mpe:
-            errors.set((random(), str(mpe)))
+            error.set((random(), str(mpe)))
         else:
             edit_algorithm(
                 input.select_batch(),
