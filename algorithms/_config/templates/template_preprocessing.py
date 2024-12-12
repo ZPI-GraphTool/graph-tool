@@ -3,7 +3,7 @@ from typing import Any, Sequence
 from algorithms._config.interfaces import PreprocessEdge
 
 
-# Change this class name to something unique and descriptive
+# Change this class name (and the file name) to something unique and descriptive
 class NewPreprocessingFunction(PreprocessEdge):
     def __init__(self) -> None:
         ...
