@@ -176,12 +176,13 @@ def server_results(
                     "node_rank_order",
                     label="Sorting order",
                     choices=["Ascending", "Descending"],
+                    selected="Descending",
                     width="50%",
                 ),
                 ui.input_numeric(
                     "node_rank_cardinality",
                     label="Cardinality of node rank",
-                    value=10,
+                    value=20,
                     min=1,
                     width="50%",
                 ),
@@ -308,14 +309,29 @@ def server_results(
         preprocessing_path: Path | None = run_paths["preprocessing_path"].get()
         streaming_path: Path = run_paths["streaming_path"].get()
         batch_path: Path | None = run_paths["batch_path"].get()
+
         if preprocessing_path:
             preprocessing_name = get_class_name_from(preprocessing_path)
+
+        streaming_name = get_class_name_from(streaming_path)
+        streaming_node_rank = get_streaming_node_rank()
+
         if batch_path:
-            batch_name = get_class_name_from(batch_path)
             jaccard_similarity, streaming_accuracy, order, cardinality = (
                 get_comparison_metrics()
             )
-            batch_node_rank = get_batch_node_rank()
+            batch_name = get_class_name_from(batch_path)
+            # fmt: off
+            streaming_node_rank = (
+                streaming_node_rank
+                .sort_values("value", ascending=order == "Ascending")
+                .head(cardinality)
+            )  # fmt: on
+            batch_node_rank = (
+                get_batch_node_rank()
+                .sort_values("value", ascending=order == "Ascending")
+                .head(cardinality)
+            )
 
         save_results_task(
             output_format=input.output_format(),
@@ -324,7 +340,7 @@ def server_results(
             preprocessing_path=preprocessing_path,
             preprocessing_name=preprocessing_name,
             streaming_path=streaming_path,
-            streaming_name=get_class_name_from(streaming_path),
+            streaming_name=streaming_name,
             batch_path=batch_path,
             batch_name=batch_name,
             total_edge_count=get_total_edge_count(),
@@ -333,7 +349,7 @@ def server_results(
             cardinality=cardinality,
             jaccard_similarity=jaccard_similarity,
             streaming_accuracy=streaming_accuracy,
-            streaming_node_rank=get_streaming_node_rank(),
+            streaming_node_rank=streaming_node_rank,
             batch_node_rank=batch_node_rank,
             calculation_time=get_calculation_time_plot(),
             memory_usage=get_memory_usage_plot(),
