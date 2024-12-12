@@ -33,7 +33,7 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     hide_console='hide-early',
-    icon='_static/icon.ico',
+    icon='_assets/icon.ico',
 )
 coll = COLLECT(
     exe,
