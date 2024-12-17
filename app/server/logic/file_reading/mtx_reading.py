@@ -1,23 +1,20 @@
 from io import TextIOWrapper
 from pathlib import Path
-from typing import Callable, Sequence
 
-import pandas as pd
-from scipy.io import mminfo, mmread
+from scipy.io import mminfo
 
 from .processing_interface import FileProcessingStrategy
 
 
 class MTXFile(FileProcessingStrategy):
-    def __init__(self, file_path: Path, processing_function = None) -> None:
+    def __init__(self, file_path: Path) -> None:
         self._file_path = file_path
-        self._process: Callable[[tuple], Sequence | dict] = processing_function
 
     def get_reader(self, file_stream: TextIOWrapper) -> TextIOWrapper:
         return file_stream
 
     def set_headers(self, reader: TextIOWrapper) -> None:
-        # opening the same file multiple times in one process is safe (using the defult read-only mode)
+        # opening the same file multiple times in one process is safe (using the default read-only mode)
         # each time a new file object iterator is created - no shared state between them exists
 
         # checking the header and comment count and iterating the main reader accordingly
@@ -46,13 +43,13 @@ class MTXFile(FileProcessingStrategy):
         return result
 
     # def get_dataframe(self, lst) -> pd.DataFrame:
-        # matrix = mmread(self._file_path)
+    # matrix = mmread(self._file_path)
 
-        # lst = []
-        # for i in range(len(matrix.nonzero()[0])):
-        #     data = (matrix.nonzero()[0][i], matrix.nonzero()[1][i], matrix.data[i])
-        #     if self._process:
-        #         data = self._process(data)
-            # lst.append(data)
+    # lst = []
+    # for i in range(len(matrix.nonzero()[0])):
+    #     data = (matrix.nonzero()[0][i], matrix.nonzero()[1][i], matrix.data[i])
+    #     if self._process:
+    #         data = self._process(data)
+    # lst.append(data)
 
-        # return pd.DataFrame(lst)
+    # return pd.DataFrame(lst)

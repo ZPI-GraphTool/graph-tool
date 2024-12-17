@@ -5,8 +5,8 @@ import sys
 import time
 from pathlib import Path
 from typing import Any
-import pandas as pd
 
+import pandas as pd
 from pympler.asizeof import asizeof
 
 from algorithms._config.interfaces import (
@@ -66,7 +66,6 @@ class Runner:
         if self._with_batch:
             self._batch: BatchAlgorithm = get_class_instance_from(batch_path)  # type: ignore
 
-
         file_extension = self._dataset.suffix
 
         if file_extension == ".csv":
@@ -75,10 +74,6 @@ class Runner:
             self._file_reading = MTXFile(self._dataset)
         else:
             self._file_reading = TEXTFile(self._dataset)
-        
-        if self._with_preprocessing:
-            self._file_reading._process = self._preprocessing.create_edge_from
-
 
         # time intervals are now saved using the perf_counter_ns for greater precision
         self._calculation_time_per_edge = []
@@ -95,8 +90,6 @@ class Runner:
         # pympler implementation - is restricted to the object itself, is an approximation of its size
         self._memory_usage = []
         self._processed_edge_count = 0
-
-        
 
     # getters for metrics and results -
     # some of them are optional (like results from batch) => changed method tuple return to getters
@@ -216,10 +209,9 @@ class Runner:
 
                 if self._with_preprocessing:
                     row = self._preprocessing.create_edge_from(row)
-                
+
                 if self._with_batch:
                     rows_for_batch.append(row)
-                    
 
                 property_start = time.perf_counter_ns()
                 self._streaming.on_edge_calculate(row)  # type: ignore

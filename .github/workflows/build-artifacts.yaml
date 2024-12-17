@@ -11,7 +11,7 @@ jobs:
     name: ⚙️ Setup
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - name: 📄 Checkout code
@@ -49,7 +49,7 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: 📝 Format code
-        run: uvx ruff format --check --exclude "algorithms/_config/templates,app/server/logic/file_reading/processing_interface.py" .
+        run: uvx ruff format --check --exclude "algorithms/_config/templates" .
 
   type-checking:
     name: 👀 Type checking
@@ -69,7 +69,7 @@ jobs:
     name: 🔨 Build artifact
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     needs: [setup, linting, formatting, type-checking]
     steps:
