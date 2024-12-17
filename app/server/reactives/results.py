@@ -353,6 +353,6 @@ def server_results(
             batch_node_rank=batch_node_rank,
             calculation_time=get_calculation_time_plot(),
             memory_usage=get_memory_usage_plot(),
-            calculation_avg = calculation_time_mean() ,
-            memory_avg = memory_usage_mean()
+            calculation_avg=calculation_time_mean(),
+            memory_avg=memory_usage_mean(),
         )

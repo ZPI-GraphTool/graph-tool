@@ -79,3 +79,31 @@ jobs:
         run: gh release upload ${{ github.event.release.tag_name }} NetworkStreamTool-linux.zip
         env:
           GH_TOKEN: ${{ github.token }}
+
+  publish-macos:
+    name: 🚀📦 Publish MacOS package
+    runs-on: macos-latest
+    needs: get-latest-workflow-run-id
+    steps:
+      - name: 📄 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📥 Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: NetworkStreamTool-macOS
+          path: artifact
+          repository: ${{ github.repository }}
+          run-id: ${{ needs.get-latest-workflow-run-id.outputs.run-id }}
+          github-token: ${{ github.token }}
+
+      - name: 📦 Archive artifact
+        run: |
+          cd artifact
+          zip -r ../NetworkStreamTool-macos.zip *
+          cd ..
+
+      - name: 🚀 Publish to release
+        run: gh release upload ${{ github.event.release.tag_name }} NetworkStreamTool-macos.zip
+        env:
+          GH_TOKEN: ${{ github.token }}

@@ -94,11 +94,11 @@ class AlgorithmTypeSpecification:
             case AlgorithmType.BATCH, _:
                 message = "\t# The dataframe only has one column 0 unless a specified preprocessing method has been supplied which converts the string line into an object (like a tuple).\n\t# In that case it follows how pandas creates DataFrames based on a list of those objects\n"
             case AlgorithmType.PREPROCESSING, "csv":
-                 message = "\t# The edge is a dictionary. Its keys are the headers of the supplied .csv file.\n"
+                message = "\t# The edge is a dictionary. Its keys are the headers of the supplied .csv file.\n"
             case AlgorithmType.PREPROCESSING, "mtx":
-                 message = "\t# The given edge is a tuple: 0 - source node, 1 - destination node, 2 - weight of the edge  (equal 1.0 for unweighted graphs) \n"
+                message = "\t# The given edge is a tuple: 0 - source node, 1 - destination node, 2 - weight of the edge  (equal 1.0 for unweighted graphs) \n"
             case AlgorithmType.PREPROCESSING, _:
-                 message = "\t# The edge is an unedited string equivalent to one line from the file.\n"
+                message = "\t# The edge is an unedited string equivalent to one line from the file.\n"
             case _, "csv":
                 message = "\t# The edge is a dictionary (keys are the headers of the .csv file)\n\t# or a type specified by a preprocessing function.\n"
             case _, "mtx":

@@ -86,9 +86,9 @@ def get_results_as_markdown(
         * Batch algorithm: `{kwargs['batch_name'] or "Not used"}`\n
         ## Properties and metrics\n
         * Total edge count: `{kwargs['total_edge_count']}`
-        * Size of dataset: `{kwargs['dataset_size']}
-        * Average calculation time per edge of stream algorithm: `{kwargs["calculation_avg"]}
-        * Average memory usage of stream algorithm: `{kwargs["memory_avg"]}
+        * Size of dataset: `{kwargs['dataset_size']}`
+        * Average calculation time per edge of stream algorithm: `{kwargs["calculation_avg"]}`
+        * Average memory usage of stream algorithm: `{kwargs["memory_avg"]}`
     """)
     if kwargs["batch_name"]:
         results += dedent_to_zero(f"""\
@@ -151,7 +151,7 @@ def get_results_as_latex(
         \\begin{{itemize}}
             \\item Total edge count: \\texttt{{{kwargs['total_edge_count']}}}
             \\item Size of dataset: \\texttt{{{kwargs['dataset_size']}}}
-            \\item Average calculation time per edge of stream algorithm:: \\texttt{{{kwargs["calculation_avg"]}}}
+            \\item Average calculation time per edge of stream algorithm: \\texttt{{{kwargs["calculation_avg"]}}}
             \\item Average memory usage of stream algorithm: \\texttt{{{kwargs["memory_avg"]}}}
         \\end{{itemize}}
     """)
