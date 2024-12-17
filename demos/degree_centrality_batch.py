@@ -11,8 +11,8 @@ class DegreeCentralityBatch(BatchAlgorithm):
     def calculate_property(self, data: pd.DataFrame) -> None:
         graph = nx.from_pandas_edgelist(  # type: ignore
             data,
-            source="start_stop",
-            target="end_stop",
+            source=0,
+            target=1,
             edge_attr=None,
             create_using=nx.MultiDiGraph(),  # type: ignore
         )

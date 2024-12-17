@@ -1,8 +1,10 @@
 from csv import DictReader
 from io import TextIOWrapper
 from pathlib import Path
+from typing import Callable, Sequence
 
 import pandas as pd
+import csv
 
 from .processing_interface import FileProcessingStrategy
 
@@ -20,5 +22,4 @@ class CSVFile(FileProcessingStrategy):
     def process_row(self, row: dict) -> dict:
         return row
 
-    def get_dataframe(self) -> pd.DataFrame:
-        return pd.read_csv(self._file_path)
+

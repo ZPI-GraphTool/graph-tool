@@ -1,5 +1,6 @@
 from io import TextIOWrapper
 from pathlib import Path
+from typing import Callable, Sequence
 
 import pandas as pd
 from scipy.io import mminfo, mmread
@@ -8,8 +9,9 @@ from .processing_interface import FileProcessingStrategy
 
 
 class MTXFile(FileProcessingStrategy):
-    def __init__(self, file_path: Path) -> None:
+    def __init__(self, file_path: Path, processing_function = None) -> None:
         self._file_path = file_path
+        self._process: Callable[[tuple], Sequence | dict] = processing_function
 
     def get_reader(self, file_stream: TextIOWrapper) -> TextIOWrapper:
         return file_stream
@@ -38,16 +40,19 @@ class MTXFile(FileProcessingStrategy):
         split_row = row.rstrip().split(" ")
         result = (0, 0)
         if len(split_row) == 2:
-            result = (int(split_row[0]), int(split_row[1]))
+            result = (int(split_row[0]), int(split_row[1]), 1.0)
         elif len(split_row) == 3:
             result = (int(split_row[0]), int(split_row[1]), float(split_row[2]))
         return result
 
-    def get_dataframe(self) -> pd.DataFrame:
-        matrix = mmread(self._file_path)
+    # def get_dataframe(self, lst) -> pd.DataFrame:
+        # matrix = mmread(self._file_path)
 
-        lst = []
-        for i in range(len(matrix.nonzero()[0])):
-            lst.append((matrix.nonzero()[0][i], matrix.nonzero()[1][i]))
+        # lst = []
+        # for i in range(len(matrix.nonzero()[0])):
+        #     data = (matrix.nonzero()[0][i], matrix.nonzero()[1][i], matrix.data[i])
+        #     if self._process:
+        #         data = self._process(data)
+            # lst.append(data)
 
-        return pd.DataFrame(lst)
+        # return pd.DataFrame(lst)

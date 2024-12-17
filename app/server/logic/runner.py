@@ -5,6 +5,7 @@ import sys
 import time
 from pathlib import Path
 from typing import Any
+import pandas as pd
 
 from pympler.asizeof import asizeof
 
@@ -55,6 +56,17 @@ class Runner:
         self._with_preprocessing = preprocessing_path is not None
         self._with_batch = batch_path is not None
 
+        if self._with_preprocessing:
+            self._preprocessing: PreprocessEdge = get_class_instance_from(
+                preprocessing_path  # type: ignore
+            )
+
+        self._streaming: StreamingAlgorithm = get_class_instance_from(streaming_path)  # type: ignore
+
+        if self._with_batch:
+            self._batch: BatchAlgorithm = get_class_instance_from(batch_path)  # type: ignore
+
+
         file_extension = self._dataset.suffix
 
         if file_extension == ".csv":
@@ -62,13 +74,11 @@ class Runner:
         elif file_extension == ".mtx":
             self._file_reading = MTXFile(self._dataset)
         else:
-            # dont ask
-            if self._with_preprocessing:
-                self._file_reading = TEXTFile(
-                    self._dataset, self._preprocessing.create_edge_from
-                )
-            else:
-                self._file_reading = TEXTFile(self._dataset)
+            self._file_reading = TEXTFile(self._dataset)
+        
+        if self._with_preprocessing:
+            self._file_reading._process = self._preprocessing.create_edge_from
+
 
         # time intervals are now saved using the perf_counter_ns for greater precision
         self._calculation_time_per_edge = []
@@ -86,15 +96,7 @@ class Runner:
         self._memory_usage = []
         self._processed_edge_count = 0
 
-        if self._with_preprocessing:
-            self._preprocessing: PreprocessEdge = get_class_instance_from(
-                preprocessing_path  # type: ignore
-            )
-
-        self._streaming: StreamingAlgorithm = get_class_instance_from(streaming_path)  # type: ignore
-
-        if self._with_batch:
-            self._batch: BatchAlgorithm = get_class_instance_from(batch_path)  # type: ignore
+        
 
     # getters for metrics and results -
     # some of them are optional (like results from batch) => changed method tuple return to getters
@@ -204,10 +206,7 @@ class Runner:
 
     def run_experiment(self, sample_count: int = 100) -> None:
         sampling_interval = get_sampling_interval(self._row_count, sample_count)
-        # process = psutil.Process(os.getpid())
-
-        # MB_ratio = 1/(1024*1024)
-        # self._memory_usage.append([process.memory_info().rss*MB_ratio])
+        rows_for_batch = []
 
         with open(self._dataset, encoding="utf-8") as file:
             reader = self._file_reading.get_reader(file)
@@ -216,11 +215,11 @@ class Runner:
                 row: Any = self._file_reading.process_row(row)
 
                 if self._with_preprocessing:
-                    preprocessing_start = time.perf_counter_ns()
                     row = self._preprocessing.create_edge_from(row)
-                    preprocessing_end = time.perf_counter_ns()
-                    preprocessing_duration = preprocessing_end - preprocessing_start
-                    self._preprocessing_time_per_edge.append(preprocessing_duration)
+                
+                if self._with_batch:
+                    rows_for_batch.append(row)
+                    
 
                 property_start = time.perf_counter_ns()
                 self._streaming.on_edge_calculate(row)  # type: ignore
@@ -236,4 +235,4 @@ class Runner:
                 self._processed_edge_count += 1
 
             if self._with_batch:
-                self._batch.calculate_property(self._file_reading.get_dataframe())  # type: ignore
+                self._batch.calculate_property(pd.DataFrame(rows_for_batch))  # type: ignore

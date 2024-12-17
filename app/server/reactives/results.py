@@ -66,7 +66,7 @@ def server_results(
     @reactive.calc
     def calculation_time_mean() -> str:
         df = pd.DataFrame(results["calculation_time"].get(), columns=["time [ns]"])
-        return f"average: {df.mean().values[0]:.6g} ns"
+        return f"Average: {df.mean().values[0]:.6g} ns"
 
     @render.ui
     def calculation_time_plot() -> Tag:
@@ -92,7 +92,7 @@ def server_results(
     @reactive.calc
     def memory_usage_mean() -> str:
         df = pd.DataFrame(results["memory_usage"].get(), columns=["edge", "memory"])
-        return f"average: {df['memory'].mean():.6g} B"
+        return f"Average: {df['memory'].mean():.6g} B"
 
     @render.ui
     def memory_usage_plot() -> Tag:
@@ -353,4 +353,6 @@ def server_results(
             batch_node_rank=batch_node_rank,
             calculation_time=get_calculation_time_plot(),
             memory_usage=get_memory_usage_plot(),
+            calculation_avg = calculation_time_mean() ,
+            memory_avg = memory_usage_mean()
         )

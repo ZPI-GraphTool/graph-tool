@@ -18,6 +18,6 @@ class FileProcessingStrategy(ABC):
     def process_row(self, row: Any) -> Any:
         ...
 
-    @abstractmethod
-    def get_dataframe(self) -> pd.DataFrame:
-        ...
+    # @abstractmethod
+    # def get_dataframe(self, lst: list) -> pd.DataFrame:
+    #     ...
